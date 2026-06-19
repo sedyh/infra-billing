@@ -14,11 +14,19 @@ import {
   Title,
   Tooltip,
 } from '@mantine/core';
+import { LineChart } from '@mantine/charts';
 import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 import { notifyError, notifySuccess } from '@/utils/notify';
-import { IconEdit, IconExternalLink, IconPlus, IconRefresh, IconTrash } from '@tabler/icons-react';
+import {
+  IconChartLine,
+  IconEdit,
+  IconExternalLink,
+  IconPlus,
+  IconRefresh,
+  IconTrash,
+} from '@tabler/icons-react';
 import type { Provider, ProviderKind } from '@infra/shared';
 import {
   useCreateProvider,
@@ -28,9 +36,10 @@ import {
   useSyncProvider,
   useUpdateProvider,
 } from '@/api/providers';
+import { useBalanceHistory } from '@/api/analytics';
 import { apiErrorMessage } from '@/api/client';
 import { useEnums } from '@/constants';
-import { formatDate, formatMoney } from '@/utils/format';
+import { formatDate, formatDateShort, formatMoney } from '@/utils/format';
 import { providerFavicon } from '@/utils/favicon';
 import { ProviderIcon } from '@/components/ProviderIcon';
 import { NetcupAuthorizeButton } from '@/components/NetcupAuthorizeButton';
@@ -74,6 +83,16 @@ export function ProvidersPage() {
   const syncAll = useSyncAllProviders();
   const [opened, { open, close }] = useDisclosure(false);
   const [editing, setEditing] = useState<Provider | null>(null);
+  const [historyFor, setHistoryFor] = useState<Provider | null>(null);
+  const history = useBalanceHistory(historyFor?.uuid);
+  // Snapshots are taken on every sync (~6h), so collapse to one point per day — the day's last
+  // snapshot — to match the "balance by day" chart and avoid repeated same-date axis labels.
+  const dailyBalance = new Map<string, number>();
+  for (const pt of history.data ?? [])
+    dailyBalance.set(formatDateShort(pt.capturedAt), Number(pt.balance));
+  const historyData = [...dailyBalance].map(([date, balance]) => ({ date, balance }));
+  const latest = history.data?.[history.data.length - 1];
+  const historyCurrency = latest?.currency ?? historyFor?.balanceCurrency ?? '';
 
   const form = useForm<FormValues>({
     initialValues: EMPTY_FORM,
@@ -277,6 +296,13 @@ export function ProvidersPage() {
                         </ActionIcon>
                       </Tooltip>
                     )}
+                    {p.balance != null && (
+                      <Tooltip label={t('providers.balanceHistory.tooltip')}>
+                        <ActionIcon variant="subtle" onClick={() => setHistoryFor(p)}>
+                          <IconChartLine size={16} />
+                        </ActionIcon>
+                      </Tooltip>
+                    )}
                     <ActionIcon variant="subtle" onClick={() => openEdit(p)}>
                       <IconEdit size={16} />
                     </ActionIcon>
@@ -410,6 +436,48 @@ export function ProvidersPage() {
             </Button>
           </Stack>
         </form>
+      </Modal>
+
+      <Modal
+        opened={!!historyFor}
+        onClose={() => setHistoryFor(null)}
+        title={t('providers.balanceHistory.title', { name: historyFor?.name ?? '' })}
+        size="lg"
+      >
+        {history.isLoading ? (
+          <Text c="dimmed" py="md" ta="center">
+            {t('common.loading')}
+          </Text>
+        ) : historyData.length >= 2 ? (
+          <LineChart
+            h={260}
+            data={historyData}
+            dataKey="date"
+            series={[
+              { name: 'balance', label: t('providers.balanceHistory.series'), color: 'brand.6' },
+            ]}
+            curveType="linear"
+            withDots={historyData.length <= 60}
+            valueFormatter={(v) => formatMoney(String(v), historyCurrency)}
+            yAxisProps={{ tickFormatter: (v: number) => formatMoney(String(v)) }}
+          />
+        ) : latest ? (
+          <Stack gap={2} py="lg" align="center">
+            <Text size="xl" fw={700}>
+              {formatMoney(latest.balance, historyCurrency)}
+            </Text>
+            <Text c="dimmed" size="sm">
+              {formatDate(latest.capturedAt)}
+            </Text>
+            <Text c="dimmed" size="sm" ta="center" mt="xs">
+              {t('providers.balanceHistory.notEnough')}
+            </Text>
+          </Stack>
+        ) : (
+          <Text c="dimmed" py="md" ta="center">
+            {t('providers.balanceHistory.empty')}
+          </Text>
+        )}
       </Modal>
     </Stack>
   );
