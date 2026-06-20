@@ -12,7 +12,7 @@ import {
   parseBillmgrDate,
   val,
 } from './billmgr.parse';
-import { totpCode } from './billmgr.totp';
+import { totpCode } from '../common/totp';
 import { BillmgrCredentials, BillmgrDoc } from './billmgr.types';
 
 // BILLmanager splits services by type, each behind its own list func.

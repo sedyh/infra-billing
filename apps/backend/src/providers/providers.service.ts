@@ -50,6 +50,11 @@ export class ProvidersService {
       const c = this.decodeCredentials(enc);
       return { ...dto, panelId: c.panelId ?? null };
     }
+    if (kind === 'beget') {
+      // Only the login is a non-secret hint; never expose password/totpSecret/apiPassword.
+      const c = this.decodeCredentials(enc);
+      return { ...dto, username: c.username ?? null };
+    }
     if (kind !== 'hostbill' && kind !== 'billmgr') return dto;
     const c = this.decodeCredentials(enc);
     // Never expose password/totpSecret.
@@ -108,6 +113,7 @@ export class ProvidersService {
       accountId?: string;
       projectName?: string;
       panelId?: string;
+      apiPassword?: string;
     },
     existingEnc?: Uint8Array | null,
   ): Uint8Array<ArrayBuffer> | null {
@@ -154,6 +160,24 @@ export class ProvidersService {
       const creds: Record<string, string> = { baseUrl, username, password };
       const totpSecret = supportsTotp ? (dto.totpSecret ?? base.totpSecret) : undefined;
       if (totpSecret) creds.totpSecret = totpSecret;
+      return this.crypto.encrypt(JSON.stringify(creds));
+    }
+    if (kind === 'beget') {
+      // JSON { username (login), password, totpSecret?, apiPassword? }; merge so a partial edit
+      // (e.g. adding only the API password) keeps the rest.
+      const supplied = dto.username || dto.password || dto.totpSecret || dto.apiPassword;
+      if (!supplied) return null;
+      const base = this.decodeCredentials(existingEnc);
+      const username = dto.username ?? base.username;
+      const password = dto.password ?? base.password;
+      if (!username || !password) {
+        throw new BadRequestException('Provide the Beget account login and password together');
+      }
+      const creds: Record<string, string> = { username, password };
+      const totpSecret = dto.totpSecret ?? base.totpSecret;
+      if (totpSecret) creds.totpSecret = totpSecret;
+      const apiPassword = dto.apiPassword ?? base.apiPassword;
+      if (apiPassword) creds.apiPassword = apiPassword;
       return this.crypto.encrypt(JSON.stringify(creds));
     }
     if (kind !== 'manual' && dto.token) return this.crypto.encrypt(dto.token);

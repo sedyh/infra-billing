@@ -46,6 +46,11 @@ export const providers = {
         'Use “Authorize via netcup” above, or paste an offline refresh token manually',
       panelId: 'Panel ID',
       panelIdDesc: 'panel_id — usually 1',
+      begetLogin: 'Beget login',
+      begetLoginDesc: 'Your cp.beget.com account login (not the API password)',
+      begetApiPassword: 'API password (optional, for balance)',
+      begetApiPasswordDesc:
+        'Separate "Beget API" password from the panel (Account → Security → Beget API) — enables balance sync',
       loginUrl: 'Account link',
     },
     keepEmpty: 'leave empty to keep unchanged',
@@ -54,6 +59,7 @@ export const providers = {
       selectelCreds: 'Enter account number, username and password',
       vps4Token: 'Enter the 4VPS API token',
       netcupToken: 'Authorize via netcup or paste a refresh token',
+      begetCreds: 'Enter the Beget login and password',
     },
     netcup: {
       authorize: 'Authorize via netcup',
@@ -121,6 +127,11 @@ export const providers = {
         'Нажмите «Авторизоваться через netcup» выше или вставьте offline refresh-токен вручную',
       panelId: 'ID панели',
       panelIdDesc: 'panel_id — обычно 1',
+      begetLogin: 'Логин Beget',
+      begetLoginDesc: 'Логин аккаунта cp.beget.com (не API-пароль)',
+      begetApiPassword: 'API-пароль (необязательно, для баланса)',
+      begetApiPasswordDesc:
+        'Отдельный пароль «Beget API» из панели (Аккаунт → Безопасность → Beget API) — включает синк баланса',
       loginUrl: 'Ссылка на ЛК',
     },
     keepEmpty: 'оставьте пустым, чтобы не менять',
@@ -129,6 +140,7 @@ export const providers = {
       selectelCreds: 'Укажите номер аккаунта, имя пользователя и пароль',
       vps4Token: 'Укажите API-токен 4VPS',
       netcupToken: 'Авторизуйтесь через netcup или вставьте refresh-токен',
+      begetCreds: 'Укажите логин и пароль Beget',
     },
     netcup: {
       authorize: 'Авторизоваться через netcup',

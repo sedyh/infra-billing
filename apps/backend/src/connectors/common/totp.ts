@@ -20,6 +20,7 @@ function base32Decode(secret: string): Buffer {
 }
 
 // RFC 6238 TOTP (HMAC-SHA1, 30s step, 6 digits) — the standard Google Authenticator code.
+// Shared by connectors with OTP-2FA logins (BILLmanager, Beget).
 export function totpCode(secret: string, atMs: number): string {
   const key = base32Decode(secret);
   let counter = Math.floor(atMs / 1000 / 30);

@@ -91,6 +91,7 @@ export const common = {
         selectel: 'Selectel',
         '4vps': '4VPS.SU',
         netlen: 'Netlen',
+        beget: 'Beget Cloud',
         manual: 'Manual',
       },
       rateSource: {
@@ -188,6 +189,7 @@ export const common = {
         selectel: 'Selectel',
         '4vps': '4VPS.SU',
         netlen: 'Netlen',
+        beget: 'Beget Cloud',
         manual: 'Ручной',
       },
       rateSource: {

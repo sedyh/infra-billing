@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { FourVpsConnector } from './4vps/4vps.connector';
 import type { FourVpsCredentials } from './4vps/4vps.types';
+import { BegetConnector } from './beget/beget.connector';
+import type { BegetCredentials } from './beget/beget.types';
 import { BillmgrConnector } from './billmgr/billmgr.connector';
 import type { BillmgrCredentials } from './billmgr/billmgr.types';
 import { Connector } from './connector.interface';
@@ -43,6 +45,9 @@ export class ConnectorFactory {
       case '4vps':
         // 4VPS secret is JSON: { token, panelId? }.
         return new FourVpsConnector(JSON.parse(token) as FourVpsCredentials);
+      case 'beget':
+        // Beget secret is JSON: { username (login), password, totpSecret?, apiPassword? }.
+        return new BegetConnector(JSON.parse(token) as BegetCredentials);
       default:
         throw new Error(`Connector for kind="${kind}" is not supported`);
     }

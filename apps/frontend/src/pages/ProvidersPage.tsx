@@ -56,6 +56,7 @@ interface FormValues {
   accountId: string;
   projectName: string;
   panelId: string;
+  apiPassword: string;
 }
 
 const EMPTY_FORM: FormValues = {
@@ -70,6 +71,7 @@ const EMPTY_FORM: FormValues = {
   accountId: '',
   projectName: '',
   panelId: '',
+  apiPassword: '',
 };
 
 // The default Mantine/recharts Y-axis starts at 0, so a near-flat balance line (e.g. a steady 36)
@@ -163,6 +165,10 @@ export function ProvidersPage() {
       notifyError(t('providers.err.netcupToken'));
       return;
     }
+    if (!editing && v.kind === 'beget' && !(v.username && v.password)) {
+      notifyError(t('providers.err.begetCreds'));
+      return;
+    }
     const creds = {
       token: v.token || undefined,
       baseUrl: v.baseUrl || undefined,
@@ -172,6 +178,7 @@ export function ProvidersPage() {
       accountId: v.accountId || undefined,
       projectName: v.projectName || undefined,
       panelId: v.panelId || undefined,
+      apiPassword: v.apiPassword || undefined,
     };
     try {
       let saved: Provider;
@@ -449,6 +456,31 @@ export function ProvidersPage() {
                 placeholder={editing ? t('providers.keepEmpty') : ''}
                 {...form.getInputProps('token')}
               />
+            ) : form.values.kind === 'beget' ? (
+              <>
+                <TextInput
+                  label={t('providers.field.begetLogin')}
+                  description={t('providers.field.begetLoginDesc')}
+                  {...form.getInputProps('username')}
+                />
+                <PasswordInput
+                  label={t('providers.field.password')}
+                  placeholder={editing ? t('providers.keepEmpty') : ''}
+                  {...form.getInputProps('password')}
+                />
+                <PasswordInput
+                  label={t('providers.field.totpSecret')}
+                  description={t('providers.field.totpSecretDesc')}
+                  placeholder={editing ? t('providers.keepEmpty') : t('common.optional')}
+                  {...form.getInputProps('totpSecret')}
+                />
+                <PasswordInput
+                  label={t('providers.field.begetApiPassword')}
+                  description={t('providers.field.begetApiPasswordDesc')}
+                  placeholder={editing ? t('providers.keepEmpty') : t('common.optional')}
+                  {...form.getInputProps('apiPassword')}
+                />
+              </>
             ) : (
               form.values.kind !== 'manual' && (
                 <TextInput

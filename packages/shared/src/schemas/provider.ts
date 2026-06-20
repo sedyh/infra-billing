@@ -31,6 +31,8 @@ export type Provider = z.infer<typeof providerSchema>;
 // Bearer-token providers (timeweb, hetzner) use `token`. HostBill/BILLmanager use
 // `baseUrl` + `username` (email) + `password`. BILLmanager with OTP 2FA additionally
 // takes `totpSecret` (the base32 seed) so the backend can generate one-time codes.
+// Beget uses `username` (account login) + `password` (Cloud API), plus optional `totpSecret`
+// (OTP 2FA) and `apiPassword` (the separate panel API password — enables the balance lookup).
 // None are ever echoed back.
 const credentialFields = {
   token: z.string().min(1).optional(),
@@ -44,6 +46,8 @@ const credentialFields = {
   projectName: z.string().min(1).optional(),
   // 4VPS: panel id (which billing panel the API key belongs to). Combined with `token`.
   panelId: z.string().min(1).optional(),
+  // Beget: the separate panel "Beget API" password (legacy hosting API) — enables balance sync.
+  apiPassword: z.string().min(1).optional(),
 };
 
 export const createProviderSchema = z.object({
