@@ -17,7 +17,7 @@ export const common = {
     },
     app: {
       brand: 'Infra Billing',
-      singleUser: 'single-user',
+      singleUser: 'root',
       logout: 'Log out',
     },
     nav: {
@@ -29,12 +29,27 @@ export const common = {
       services: 'Services',
       payments: 'Payments',
       settingsItem: 'Settings',
+      authItem: 'Sign-in',
     },
     login: {
       username: 'Username',
       password: 'Password',
       signIn: 'Sign in',
       failed: 'Sign-in failed',
+      or: 'or',
+      passkey: 'Passkey',
+      noMethods: 'No sign-in methods are enabled. Re-enable one on the server.',
+      setup: {
+        title: 'First-run setup',
+        subtitle: 'Create the owner account',
+        confirm: 'Confirm password',
+        mismatch: 'Passwords do not match',
+        passwordShort: 'At least 8 characters',
+        generate: 'Generate & copy',
+        passwordGenerated: 'Password generated and copied to clipboard',
+        passwordGeneratedNoCopy: 'Password generated — copy it manually',
+        submit: 'Create account',
+      },
     },
     build: {
       about: 'About build',
@@ -115,7 +130,7 @@ export const common = {
     },
     app: {
       brand: 'Infra Billing',
-      singleUser: 'single-user',
+      singleUser: 'root',
       logout: 'Выйти',
     },
     nav: {
@@ -127,12 +142,27 @@ export const common = {
       services: 'Сервисы',
       payments: 'Платежи',
       settingsItem: 'Настройки',
+      authItem: 'Вход в систему',
     },
     login: {
       username: 'Логин',
       password: 'Пароль',
       signIn: 'Войти',
       failed: 'Не удалось войти',
+      or: 'или',
+      passkey: 'Passkey',
+      noMethods: 'Не включён ни один способ входа. Включите его на сервере.',
+      setup: {
+        title: 'Первоначальная настройка',
+        subtitle: 'Создайте учётную запись владельца',
+        confirm: 'Повторите пароль',
+        mismatch: 'Пароли не совпадают',
+        passwordShort: 'Минимум 8 символов',
+        generate: 'Сгенерировать и скопировать',
+        passwordGenerated: 'Пароль сгенерирован и скопирован в буфер обмена',
+        passwordGeneratedNoCopy: 'Пароль сгенерирован — скопируйте его вручную',
+        submit: 'Создать учётную запись',
+      },
     },
     build: {
       about: 'О сборке',

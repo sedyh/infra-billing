@@ -16,6 +16,7 @@
     "dev:frontend": "npm run dev -w @infra/frontend",
     "dev": "npm run build:shared && (npm run dev:backend & npm run dev:frontend)",
     "start": "npm run start:prod -w @infra/backend",
+    "cli": "npm run cli -w @infra/backend",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "biome lint",
     "format": "biome format --write",

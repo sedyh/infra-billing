@@ -1,0 +1,27 @@
+model AuthConfig {
+  id Int @id @default(1) @map("id")
+
+  // Single admin. Password is scrypt-hashed ("saltHex:hashHex"), never stored in plaintext.
+  username     String  @map("username")
+  passwordHash String? @map("password_hash")
+
+  // Login methods are alternatives (not MFA). Invariant: at least one usable method stays on.
+  passwordEnabled Boolean @default(true) @map("password_enabled")
+  passkeyEnabled  Boolean @default(false) @map("passkey_enabled")
+
+  // Session JWT secret: random, generated once, AES-256-GCM encrypted at rest.
+  sessionSecretEnc Bytes? @map("session_secret_enc")
+
+  // WebAuthn Relying Party config (managed in-panel; depends on the deployment origin).
+  rpId     String? @map("rp_id")
+  rpName   String? @map("rp_name")
+  rpOrigin String? @map("rp_origin")
+
+  // Stable WebAuthn user handle (random bytes), shared by all of this user's passkeys.
+  webauthnUserId Bytes? @map("webauthn_user_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt      @map("updated_at")
+
+  @@map("auth_config")
+}

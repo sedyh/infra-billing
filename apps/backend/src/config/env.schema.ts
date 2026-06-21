@@ -7,17 +7,13 @@ export const envSchema = z.object({
 
   DATABASE_URL: z.string().min(1),
 
-  // Auth (single-user). Password compared in constant time; session cookie signed
-  // with SESSION_SECRET (derived from creds if empty — see AppConfigService).
-  ADMIN_USERNAME: z.string().min(1),
-  ADMIN_PASSWORD: z.string().min(1),
-  SESSION_SECRET: z.string().default(''),
-
-  // AES-256-GCM key for provider tokens (32 bytes, base64).
+  // AES-256-GCM key for secrets at rest — provider tokens AND the admin's password hash material /
+  // session secret (32 bytes, base64). Root key: must stay in env (can't live in the DB it protects).
   ENCRYPTION_KEY: z.string().min(1),
 
-  // NB: base currency / rate source / sync interval / upcoming-billing days / Telegram are
-  // NOT env — they live in the DB `Settings` row (managed in the panel). See SettingsService.
+  // NB: the admin account (username + password hash) lives in the DB `auth_config` row, created on
+  // first run in the panel — NOT in env. base currency / rate source / sync interval / Telegram are
+  // also in the DB `Settings` row. See AuthConfigService / SettingsService.
 
   // Build metadata, baked in by the Docker build args (see Dockerfile/Makefile).
   APP_VERSION: z.string().default('dev'),

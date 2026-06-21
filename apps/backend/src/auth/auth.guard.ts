@@ -21,7 +21,7 @@ export class AuthGuard implements CanActivate {
     private readonly reflector: Reflector,
   ) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
@@ -29,7 +29,7 @@ export class AuthGuard implements CanActivate {
     if (isPublic) return true;
 
     const req = context.switchToHttp().getRequest<AuthedRequest>();
-    const username = this.auth.verify(req.cookies?.[SESSION_COOKIE]);
+    const username = await this.auth.verify(req.cookies?.[SESSION_COOKIE]);
     if (!username) throw new UnauthorizedException();
     req.user = username;
     return true;

@@ -1,5 +1,5 @@
 .PHONY: help install dev build typecheck lint format check check-fix hooks test \
-        db-up db-down db-logs migrate generate studio \
+        db-up db-down db-logs migrate generate studio auth-reset \
         docker-build docker-save docker-up docker-down \
         bump-patch bump-minor bump-major tag-release
 
@@ -24,6 +24,7 @@ help:
 	@echo "  migrate       - prisma migrate dev (apps/backend)"
 	@echo "  generate      - prisma generate (apps/backend)"
 	@echo "  studio        - open prisma studio"
+	@echo "  auth-reset    - wipe the admin account + passkeys (re-trigger first-run setup)"
 	@echo "  docker-build  - build the production image locally"
 	@echo "  docker-save   - build and save the image to $(IMAGE).tar.gz"
 	@echo "  docker-up     - docker compose up -d (postgres + infra-billing)"
@@ -87,6 +88,12 @@ generate:
 
 studio:
 	DATABASE_URL="$(LOCAL_DATABASE_URL)" npm run prisma:studio -w @infra/backend
+
+# Recovery: wipe the admin account + passkeys so the app shows the first-run setup screen again
+# (use when the password is forgotten and all passkeys are lost). Runs the in-container CLI —
+# the app container must be up.
+auth-reset:
+	docker compose exec -T infra-billing cli reset-admin --yes
 
 # ---- docker ---------------------------------------------------------------
 docker-build:

@@ -1,6 +1,7 @@
 import i18n from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import { initReactI18next } from 'react-i18next';
+import { auth } from './locales/auth';
 import { common } from './locales/common';
 import { dashboard } from './locales/dashboard';
 import { payments } from './locales/payments';
@@ -20,6 +21,7 @@ const resources = {
       services: services.en,
       payments: payments.en,
       settings: settings.en,
+      auth: auth.en,
     },
   },
   ru: {
@@ -30,6 +32,7 @@ const resources = {
       services: services.ru,
       payments: payments.ru,
       settings: settings.ru,
+      auth: auth.ru,
     },
   },
 };

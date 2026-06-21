@@ -18,6 +18,7 @@ import {
   IconReceipt2,
   IconServer2,
   IconSettings,
+  IconShieldLock,
   IconStack2,
   type Icon,
 } from '@tabler/icons-react';
@@ -49,7 +50,10 @@ const NAV: { sectionKey: string; items: NavItem[] }[] = [
   },
   {
     sectionKey: 'nav.settings',
-    items: [{ to: '/settings', labelKey: 'nav.settingsItem', icon: IconSettings }],
+    items: [
+      { to: '/settings', labelKey: 'nav.settingsItem', icon: IconSettings, end: true },
+      { to: '/settings/auth', labelKey: 'nav.authItem', icon: IconShieldLock },
+    ],
   },
 ];
 

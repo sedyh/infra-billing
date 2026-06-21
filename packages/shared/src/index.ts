@@ -10,4 +10,5 @@ export * from './schemas/rate';
 export * from './schemas/sync';
 export * from './schemas/analytics';
 export * from './schemas/auth';
+export * from './schemas/webauthn';
 export * from './schemas/health';

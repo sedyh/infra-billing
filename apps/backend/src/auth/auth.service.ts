@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { timingSafeEqual } from 'node:crypto';
+import { createHash, timingSafeEqual } from 'node:crypto';
 import jwt from 'jsonwebtoken';
 import { CookieOptions } from 'express';
 import { AppConfigService } from '@config/app-config.service';
+import { AuthConfigService } from './auth-config.service';
+import { verifyPassword } from './password.util';
 
 export const SESSION_COOKIE = 'infra_session';
 const SESSION_MAX_AGE_SEC = 7 * 24 * 60 * 60; // 7 days
@@ -13,28 +15,36 @@ interface SessionPayload {
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly config: AppConfigService) {}
+  constructor(
+    private readonly config: AppConfigService,
+    private readonly authConfig: AuthConfigService,
+  ) {}
 
-  /** Constant-time credential check against env-configured admin creds. */
-  verifyCredentials(username: string, password: string): boolean {
-    return (
-      this.safeEqual(username, this.config.adminUsername) &&
-      this.safeEqual(password, this.config.adminPassword)
-    );
+  /** Constant-time credential check against the admin row in the DB. */
+  async verifyCredentials(username: string, password: string): Promise<boolean> {
+    const row = await this.authConfig.getRow();
+    if (!row?.passwordEnabled) return false;
+    // Run the KDF unconditionally so response time doesn't reveal whether the username matched
+    // (no username-enumeration timing oracle); compare the username constant-time too.
+    const passwordOk = verifyPassword(password, row.passwordHash);
+    const usernameOk = this.safeEqual(username, row.username);
+    return usernameOk && passwordOk;
   }
 
   /** Sign a session JWT for the given username (7d expiry). */
-  sign(username: string): string {
-    return jwt.sign({ u: username } satisfies SessionPayload, this.config.sessionSecret, {
+  async sign(username: string): Promise<string> {
+    const secret = await this.authConfig.getSessionSecret();
+    return jwt.sign({ u: username } satisfies SessionPayload, secret, {
       expiresIn: SESSION_MAX_AGE_SEC,
     });
   }
 
   /** Validate a session token, returning the username or null. */
-  verify(token: string | undefined): string | null {
+  async verify(token: string | undefined): Promise<string | null> {
     if (!token) return null;
     try {
-      const decoded = jwt.verify(token, this.config.sessionSecret) as SessionPayload;
+      const secret = await this.authConfig.getSessionSecret();
+      const decoded = jwt.verify(token, secret) as SessionPayload;
       return typeof decoded?.u === 'string' ? decoded.u : null;
     } catch {
       return null;
@@ -52,13 +62,9 @@ export class AuthService {
   }
 
   private safeEqual(a: string, b: string): boolean {
-    const ba = Buffer.from(String(a));
-    const bb = Buffer.from(String(b));
-    if (ba.length !== bb.length) {
-      // Run a comparison anyway to reduce timing signal on length.
-      timingSafeEqual(ba, ba);
-      return false;
-    }
-    return timingSafeEqual(ba, bb);
+    // Hash both inputs to a fixed length first, so neither the value nor the length leaks via timing.
+    const ha = createHash('sha256').update(String(a)).digest();
+    const hb = createHash('sha256').update(String(b)).digest();
+    return timingSafeEqual(ha, hb);
   }
 }

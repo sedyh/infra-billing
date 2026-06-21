@@ -29,6 +29,11 @@ COPY --from=builder /app/packages/shared/dist packages/shared/dist
 COPY --from=builder /app/apps/backend/dist apps/backend/dist
 COPY --from=builder /app/apps/frontend/dist apps/frontend/dist
 
+# Expose the maintenance CLI as a bare `cli` command (docker compose exec -it infra-billing cli).
+# npm won't link the workspace bin during `npm ci` (dist isn't built yet), so symlink it here.
+RUN chmod +x apps/backend/dist/bin/cli.js \
+  && ln -s /app/apps/backend/dist/bin/cli.js /usr/local/bin/cli
+
 COPY apps/backend/prisma apps/backend/prisma
 COPY apps/backend/prisma.config.ts apps/backend/prisma.config.ts
 

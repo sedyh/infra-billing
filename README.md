@@ -17,8 +17,9 @@
   по будущим списаниям, ближайшие списания с подсветкой критичности.
 - **Мультивалютность:** суммы в своей валюте, конвертация к базовой; курсы ЦБ РФ или ручные.
 - **Telegram-уведомления** (только исходящие): низкий баланс, скорое списание, ошибка синка.
-- **Безопасность:** вход по логину/паролю (JWT в httpOnly-cookie), токены провайдеров шифруются
-  AES-256-GCM и в API не возвращаются.
+- **Безопасность:** аккаунт владельца создаётся при первом запуске; вход по **паролю и/или passkey**
+  (WebAuthn) — методы переключаются в настройках; сессия — JWT в httpOnly-cookie; токены провайдеров
+  шифруются AES-256-GCM и в API не возвращаются.
 
 ## Стек
 
@@ -43,10 +44,8 @@ mkdir -p /opt/infra-billing && cd /opt/infra-billing
 curl -fsSL -o docker-compose.yml https://raw.githubusercontent.com/mishkatik/infra-billing/main/docker-compose-prod.yml
 curl -fsSL -o .env https://raw.githubusercontent.com/mishkatik/infra-billing/main/.env.example
 
-# 3. Сгенерировать секреты (GNU sed; разделитель # — т.к. base64 содержит /)
+# 3. Сгенерировать ключ шифрования (GNU sed; разделитель # — т.к. base64 содержит /)
 sed -i "s#^ENCRYPTION_KEY=.*#ENCRYPTION_KEY=$(openssl rand -base64 32)#" .env
-sed -i "s#^SESSION_SECRET=.*#SESSION_SECRET=$(openssl rand -base64 48)#" .env
-sed -i "s#^ADMIN_PASSWORD=.*#ADMIN_PASSWORD=$(openssl rand -hex 16)#" .env
 
 # 4. Пароль БД — один и тот же в POSTGRES_PASSWORD и в DATABASE_URL
 pw=$(openssl rand -hex 24) && sed -i "s/^POSTGRES_PASSWORD=.*/POSTGRES_PASSWORD=$pw/" .env && sed -i "s|^\(DATABASE_URL=\"postgresql://infra:\)[^\@]*\(@.*\)|\1$pw\2|" .env
@@ -55,7 +54,8 @@ pw=$(openssl rand -hex 24) && sed -i "s/^POSTGRES_PASSWORD=.*/POSTGRES_PASSWORD=
 docker compose up -d && docker compose logs -f
 ```
 
-Логин/пароль администратора после генерации: `grep -E '^ADMIN_(USERNAME|PASSWORD)=' .env`.
+При первом открытии панель покажет экран регистрации — создайте аккаунт владельца (логин + пароль;
+passkey можно добавить позже).
 
 Панель поднимется на `127.0.0.1:8080`. Дальше — reverse-proxy с TLS на ваш домен.
 
@@ -88,6 +88,39 @@ docker image prune
 
 ---
 
+## Вход в систему
+
+Аккаунт владельца создаётся при **первом запуске** прямо в панели — на экране регистрации (логин +
+пароль; там же можно сгенерировать стойкий пароль и сразу скопировать его).
+
+> Экран регистрации доступен без авторизации, пока админ не создан. **Пройдите настройку сразу
+> после деплоя** и не открывайте панель в интернет до этого — иначе аккаунт может занять тот, кто
+> откроет её первым.
+
+Способы входа — **пароль** и/или **passkey** (WebAuthn: Touch ID / Windows Hello / аппаратный
+ключ). Это **альтернативы, а не второй фактор** — достаточно любого включённого. Управление —
+*Настройки → Вход в систему*: тумблеры «Пароль» / «Passkey», добавление и удаление passkey-ключей.
+Хотя бы один способ всегда остаётся включённым (защита от блокировки).
+
+Passkeys работают только в защищённом контексте (**HTTPS** или `localhost`). В настройках passkey
+задайте **rpId** (домен без `https://`) и **Origin** (полный адрес) — кнопка «Подставить текущий
+хост» заполнит их автоматически.
+
+### Восстановление доступа (забыли пароль)
+
+Если пароль утерян и нет рабочего паскея — сбросьте администратора встроенной CLI прямо в контейнере.
+После сброса панель снова покажет экран первичной настройки.
+
+```bash
+# Интерактивное меню:
+docker compose exec -it infra-billing cli
+
+# Либо сразу, без подтверждения:
+docker compose exec infra-billing cli reset-admin --yes
+```
+
+---
+
 ## Конфигурация (`.env`)
 
 | Переменная | Назначение |
@@ -96,9 +129,7 @@ docker image prune
 | `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` | Параметры контейнера Postgres |
 | `POSTGRES_HOST_PORT` | Порт публикации Postgres на `127.0.0.1` (default 5432) |
 | `DATABASE_URL` | Строка подключения Prisma (хост = `infra-billing-db` в docker, `127.0.0.1` локально) |
-| `ADMIN_USERNAME` / `ADMIN_PASSWORD` | Учётные данные входа в панель |
-| `SESSION_SECRET` | Подпись cookie-сессии (если пусто — выводится из ADMIN-данных) |
-| `ENCRYPTION_KEY` | **Обязательно.** AES-256-GCM ключ для токенов провайдеров (32 байта base64) |
+| `ENCRYPTION_KEY` | **Обязательно.** AES-256-GCM ключ для секретов в БД — токены провайдеров и секрет сессии (32 байта base64) |
 
 ---
 
