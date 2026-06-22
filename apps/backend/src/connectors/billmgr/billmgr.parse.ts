@@ -24,6 +24,26 @@ export function currencyFromAmount(s: string | undefined): string {
   return normalizeCurrency((s ?? '').replace(/[\d.,\s+-]/g, ''));
 }
 
+// func=payment renders `status` as a localized display name ("Зачислен"/"Paid"); other states
+// like "Новый"/"Отменён" are not real top-ups. Verified live: akenai (en) returns "Paid".
+const CREDITED_PAYMENT_STATUSES = new Set([
+  'зачислен',
+  'зачислено',
+  'оплачен',
+  'оплачено',
+  'проведен',
+  'проведён',
+  'paid',
+]);
+
+// Whether a func=payment record counts as a completed top-up. A missing status is treated as
+// importable (older installs / records that omit it), so only an explicit non-credited status
+// (e.g. "Новый"/"Отменён") is filtered out.
+export function isPaymentCredited(status: string | undefined): boolean {
+  if (!status) return true;
+  return CREDITED_PAYMENT_STATUSES.has(status.trim().toLowerCase());
+}
+
 // BILLmanager dates are ISO-ish ("2026-06-06"); undefined when missing/unparseable.
 export function parseBillmgrDate(s: string | undefined): Date | undefined {
   if (!s) return undefined;

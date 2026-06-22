@@ -9,6 +9,7 @@ import {
   billmgrError,
   currencyFromAmount,
   firstNumber,
+  isPaymentCredited,
   parseBillmgrDate,
   val,
 } from './billmgr.parse';
@@ -196,7 +197,11 @@ export class BillmgrConnector implements Connector {
         if (!id || amountStr == null || !date) continue;
         const number = val(e.number) ?? '';
         // "return/…" records are refunds — money back, so the amount is negative.
-        const sign = number.toLowerCase().startsWith('return') ? -1 : 1;
+        const isRefund = number.toLowerCase().startsWith('return');
+        const sign = isRefund ? -1 : 1;
+        // Import only credited top-ups ("Зачислен"/"Paid"); skip "Новый"/"Отменён". Refunds carry
+        // no status (money already returned), so they bypass the check.
+        if (!isRefund && !isPaymentCredited(val(e.status))) continue;
         out.push({
           externalId: `payment:${id}`,
           type: 'topup',
