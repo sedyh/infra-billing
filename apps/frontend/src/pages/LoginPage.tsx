@@ -26,8 +26,8 @@ export function LoginPage() {
   const status = useSetupStatus();
 
   return (
-    <Center h="100vh">
-      <Card withBorder radius="md" padding="xl" w={360}>
+    <Center h="100vh" px="md">
+      <Card withBorder radius="md" padding="xl" w="100%" maw={360}>
         <Stack align="center" gap="xs" mb="md">
           <ThemeIcon variant="light" color="brand" radius="md" size="lg">
             <IconCoin size={22} />

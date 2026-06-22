@@ -3,6 +3,7 @@ import {
   AppShell,
   Avatar,
   Box,
+  Burger,
   Group,
   NavLink,
   ScrollArea,
@@ -11,6 +12,7 @@ import {
   ThemeIcon,
   Tooltip,
 } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
 import {
   IconCoin,
   IconLayoutDashboard,
@@ -63,21 +65,29 @@ export function AppLayout() {
   const { t } = useTranslation();
   const me = useMe();
   const logout = useLogout();
+  const [navOpened, { toggle: toggleNav, close: closeNav }] = useDisclosure(false);
 
   return (
-    <AppShell header={{ height: 56 }} navbar={{ width: 260, breakpoint: 'sm' }} padding="lg">
+    <AppShell
+      header={{ height: 56 }}
+      navbar={{ width: 260, breakpoint: 'sm', collapsed: { mobile: !navOpened } }}
+      padding={{ base: 'md', sm: 'lg' }}
+    >
       <AppShell.Header>
-        <Group h="100%" px="md" justify="space-between">
-          <Group gap="xs">
+        <Group h="100%" px="md" justify="space-between" wrap="nowrap">
+          <Group gap="xs" wrap="nowrap">
+            <Burger opened={navOpened} onClick={toggleNav} hiddenFrom="sm" size="sm" />
             <ThemeIcon variant="light" color="brand" radius="md">
               <IconCoin size={18} />
             </ThemeIcon>
             <Text fw={700}>Infra Billing</Text>
           </Group>
-          <Group gap="xs">
+          <Group gap="xs" wrap="nowrap">
             <ThemeToggle />
             <LanguageSwitcher />
-            <BuildInfo />
+            <Box visibleFrom="sm">
+              <BuildInfo />
+            </Box>
           </Group>
         </Group>
       </AppShell.Header>
@@ -102,6 +112,7 @@ export function AppLayout() {
                       active={active}
                       label={t(it.labelKey)}
                       leftSection={<ItemIcon size={18} stroke={1.5} />}
+                      onClick={closeNav}
                     />
                   );
                 })}
