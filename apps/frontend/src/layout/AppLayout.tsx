@@ -28,6 +28,7 @@ import { useTranslation } from 'react-i18next';
 import { NavLink as RouterNavLink, Outlet, useLocation } from 'react-router-dom';
 import { useLogout, useMe } from '@/api/auth';
 import { BuildInfo } from '@/components/BuildInfo';
+import { GithubStars } from '@/components/GithubStars';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
@@ -83,6 +84,9 @@ export function AppLayout() {
             <Text fw={700}>Infra Billing</Text>
           </Group>
           <Group gap="xs" wrap="nowrap">
+            <Box visibleFrom="sm">
+              <GithubStars />
+            </Box>
             <ThemeToggle />
             <LanguageSwitcher />
             <Box visibleFrom="sm">

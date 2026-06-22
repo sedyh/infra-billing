@@ -19,6 +19,7 @@ export const common = {
       brand: 'Infra Billing',
       singleUser: 'root',
       logout: 'Log out',
+      starOnGithub: 'Star on GitHub',
     },
     theme: {
       dark: 'Dark theme',
@@ -136,6 +137,7 @@ export const common = {
       brand: 'Infra Billing',
       singleUser: 'root',
       logout: 'Выйти',
+      starOnGithub: 'Звезда на GitHub',
     },
     theme: {
       dark: 'Тёмная тема',
