@@ -44,6 +44,8 @@ export const createServiceSchema = z.object({
 export type CreateService = z.infer<typeof createServiceSchema>;
 
 export const updateServiceSchema = z.object({
+  // Only honoured for manual services — moving a synced one would orphan it from sync.
+  providerUuid: uuidSchema.optional(),
   name: z.string().min(1).optional(),
   type: serviceTypeSchema.optional(),
   cost: moneySchema.optional(),

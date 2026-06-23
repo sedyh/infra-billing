@@ -132,6 +132,7 @@ export function ServicesPage() {
         await update.mutateAsync({
           uuid: editing.uuid,
           dto: {
+            providerUuid: v.providerUuid,
             name: v.name,
             type: v.type as ServiceType,
             cost: trimMoney(v.cost),
@@ -312,14 +313,15 @@ export function ServicesPage() {
       >
         <form onSubmit={submit}>
           <Stack>
-            {!editing && (
-              <Select
-                label={t('services.fieldProvider')}
-                data={providerOptions}
-                allowDeselect={false}
-                {...form.getInputProps('providerUuid')}
-              />
-            )}
+            <Select
+              label={t('services.fieldProvider')}
+              data={providerOptions}
+              allowDeselect={false}
+              // Synced services are matched by provider — can't be reattached elsewhere.
+              disabled={Boolean(editing?.isManaged)}
+              description={editing?.isManaged ? t('services.providerLockedHint') : undefined}
+              {...form.getInputProps('providerUuid')}
+            />
             <TextInput label={t('services.fieldName')} required {...form.getInputProps('name')} />
             <Group grow>
               <Select

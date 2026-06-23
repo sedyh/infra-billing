@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@generated/prisma/client';
 import { Service as ServiceDto } from '@infra/shared';
 import { PrismaService } from '../prisma/prisma.service';
@@ -42,7 +42,12 @@ export class ServicesService {
   }
 
   async update(uuid: string, dto: UpdateServiceDto): Promise<ServiceDto> {
-    await this.ensureExists(uuid);
+    const existing = await this.prisma.service.findUnique({
+      where: { uuid },
+      select: { uuid: true, isManaged: true, providerUuid: true },
+    });
+    if (!existing) throw new NotFoundException('Service not found');
+
     const data: Prisma.ServiceUpdateInput = {};
     if (dto.name !== undefined) {
       data.name = dto.name;
@@ -62,7 +67,28 @@ export class ServicesService {
       data.nextBillingAt = dto.nextBillingAt ? new Date(dto.nextBillingAt) : null;
     }
     if (dto.isActive !== undefined) data.isActive = dto.isActive;
-    const s = await this.prisma.service.update({ where: { uuid }, data });
+
+    // Provider can only change for manual services: a synced one is matched by
+    // (providerUuid, externalId), so moving it would orphan it from sync.
+    const moving = dto.providerUuid !== undefined && dto.providerUuid !== existing.providerUuid;
+    if (!moving) {
+      const s = await this.prisma.service.update({ where: { uuid }, data });
+      return mapService(s);
+    }
+    if (existing.isManaged) {
+      throw new ConflictException('Cannot change the provider of a synced service');
+    }
+    const newProviderUuid = dto.providerUuid as string;
+    await this.ensureProvider(newProviderUuid);
+    data.provider = { connect: { uuid: newProviderUuid } };
+    // Re-link the service's payments to the new provider so they stay consistent.
+    const s = await this.prisma.$transaction(async (tx) => {
+      await tx.payment.updateMany({
+        where: { serviceUuid: uuid },
+        data: { providerUuid: newProviderUuid },
+      });
+      return tx.service.update({ where: { uuid }, data });
+    });
     return mapService(s);
   }
 
