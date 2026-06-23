@@ -179,6 +179,10 @@ export function ProvidersPage() {
       notifyError(t('providers.err.porkbunCreds'));
       return;
     }
+    if (!editing && v.kind === 'linode' && !v.token) {
+      notifyError(t('providers.err.linodeToken'));
+      return;
+    }
     const creds = {
       token: v.token || undefined,
       baseUrl: v.baseUrl || undefined,
@@ -474,6 +478,13 @@ export function ProvidersPage() {
               <TextInput
                 label={t('providers.field.apiToken')}
                 description={t('providers.field.apiTokenDescVultr')}
+                placeholder={editing ? t('providers.keepEmpty') : ''}
+                {...form.getInputProps('token')}
+              />
+            ) : form.values.kind === 'linode' ? (
+              <TextInput
+                label={t('providers.field.apiToken')}
+                description={t('providers.field.apiTokenDescLinode')}
                 placeholder={editing ? t('providers.keepEmpty') : ''}
                 {...form.getInputProps('token')}
               />

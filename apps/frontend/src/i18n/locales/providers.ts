@@ -42,6 +42,8 @@ export const providers = {
       apiTokenDesc4vps: '4VPS personal account → API section',
       apiTokenDescNetlen: 'Netlen panel → API. Important: whitelist the server IP for the key.',
       apiTokenDescVultr: 'Vultr → Account → API. Whitelist the server IP if Access Control is on.',
+      apiTokenDescLinode:
+        'Linode → Account → API Tokens → create a Personal Access Token (read access to Account and Linodes)',
       refreshToken: 'Refresh token (OAuth2)',
       refreshTokenDescNetcup:
         'Use “Authorize via netcup” above, or paste an offline refresh token manually',
@@ -66,6 +68,7 @@ export const providers = {
       begetCreds: 'Enter the Beget login and password',
       vultrToken: 'Enter the Vultr API key',
       porkbunCreds: 'Enter the Porkbun API key and secret key',
+      linodeToken: 'Enter the Linode API token',
     },
     netcup: {
       authorize: 'Authorize via netcup',
@@ -130,6 +133,8 @@ export const providers = {
       apiTokenDescNetlen: 'Панель Netlen → API. Важно: добавьте IP сервера в whitelist ключа.',
       apiTokenDescVultr:
         'Vultr → Account → API. Если включён Access Control — добавьте IP сервера в whitelist.',
+      apiTokenDescLinode:
+        'Linode → Account → API Tokens → создать Personal Access Token (доступ на чтение к Account и Linodes)',
       refreshToken: 'Refresh-токен (OAuth2)',
       refreshTokenDescNetcup:
         'Нажмите «Авторизоваться через netcup» выше или вставьте offline refresh-токен вручную',
@@ -154,6 +159,7 @@ export const providers = {
       begetCreds: 'Укажите логин и пароль Beget',
       vultrToken: 'Укажите API-ключ Vultr',
       porkbunCreds: 'Укажите API-ключ и секретный ключ Porkbun',
+      linodeToken: 'Укажите API-токен Linode',
     },
     netcup: {
       authorize: 'Авторизоваться через netcup',

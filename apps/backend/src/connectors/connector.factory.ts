@@ -9,6 +9,7 @@ import { Connector } from './connector.interface';
 import { HetznerConnector } from './hetzner/hetzner.connector';
 import { HostbillConnector } from './hostbill/hostbill.connector';
 import type { HostbillCredentials } from './hostbill/hostbill.types';
+import { LinodeConnector } from './linode/linode.connector';
 import { NetcupConnector } from './netcup/netcup.connector';
 import { NetlenConnector } from './netlen/netlen.connector';
 import { PorkbunConnector } from './porkbun/porkbun.connector';
@@ -57,6 +58,9 @@ export class ConnectorFactory {
       case 'vultr':
         // Vultr secret is the raw API key (single string, sent as the Authorization Bearer header).
         return new VultrConnector(token);
+      case 'linode':
+        // Linode secret is the raw Personal Access Token (sent as the Authorization Bearer header).
+        return new LinodeConnector(token);
       default:
         throw new Error(`Connector for kind="${kind}" is not supported`);
     }

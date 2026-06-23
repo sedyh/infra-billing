@@ -29,6 +29,7 @@ export const PROVIDER_KINDS: ProviderKind[] = [
   'beget',
   'porkbun',
   'vultr',
+  'linode',
   'manual',
 ];
 

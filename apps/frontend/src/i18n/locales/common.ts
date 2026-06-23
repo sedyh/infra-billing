@@ -115,6 +115,7 @@ export const common = {
         beget: 'Beget Cloud',
         porkbun: 'Porkbun',
         vultr: 'Vultr',
+        linode: 'Linode',
         manual: 'Manual',
       },
       rateSource: {
@@ -237,6 +238,7 @@ export const common = {
         beget: 'Beget Cloud',
         porkbun: 'Porkbun',
         vultr: 'Vultr',
+        linode: 'Linode',
         manual: 'Ручной',
       },
       rateSource: {

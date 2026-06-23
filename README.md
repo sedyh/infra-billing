@@ -8,7 +8,7 @@
 ## Возможности
 
 - **Провайдеры с API:** Timeweb Cloud, Hetzner Cloud, netcup, HostBill, ISPsystem BILLmanager,
-  Selectel, 4VPS.SU, Netlen, Beget Cloud, Porkbun, Vultr. Плюс **Manual** — провайдеры без API ведутся руками.
+  Selectel, 4VPS.SU, Netlen, Beget Cloud, Porkbun, Vultr, Linode. Плюс **Manual** — провайдеры без API ведутся руками.
 - **Автосинк** (по расписанию + кнопкой): баланс + валюта аккаунта, список серверов/услуг, даты
   следующих списаний; история баланса по дням (снапшоты).
 - **Импорт платежей** там, где API отдаёт реестр (BILLmanager — пополнения и списания, HostBill —
@@ -175,6 +175,10 @@ curl -H "Authorization: Bearer ib_…" https://infra-billing/api/providers
 - **Vultr** — API-ключ (Account → API). Если на ключе включён Access Control — добавьте IP сервера
   в whitelist, иначе запросы отклоняются (403). Тянет баланс (USD), серверы (цена из тарифа) и
   реестр billing-history (пополнения и списания); страна определяется по региону.
+- **Linode (Akamai)** — Personal Access Token (Account → API Tokens; доступ на чтение к Account и
+  Linodes). Тянет серверы (цена из тарифа, с учётом региональных цен), баланс (USD) и историю
+  платежей (пополнения + счета). Linode постоплатный: `balance` — это задолженность, поэтому
+  храним чистую позицию (кредит — плюс, долг — минус). Страна определяется по региону.
 - **Manual** — без API, всё вводится руками.
 
 ## Telegram-уведомления
