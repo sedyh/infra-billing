@@ -18,11 +18,13 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { API, API_SUB, CONTROLLERS_INFO, ID_PARAM } from '@infra/shared';
+import { AnalyticsService } from '../analytics/analytics.service';
 import { ProjectsService } from './projects.service';
 import {
   BulkMoveResultDto,
   CreateProjectDto,
   ProjectDto,
+  ProjectStatsDto,
   UpdateProjectDto,
 } from './dto/project.dto';
 
@@ -30,7 +32,10 @@ import {
 @ApiTags(CONTROLLERS_INFO.PROJECTS.TAG)
 @Controller(API.PROJECTS)
 export class ProjectsController {
-  constructor(private readonly projects: ProjectsService) {}
+  constructor(
+    private readonly projects: ProjectsService,
+    private readonly analytics: AnalyticsService,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'List projects' })
@@ -52,6 +57,13 @@ export class ProjectsController {
   @ApiOkResponse({ type: ProjectDto })
   update(@Param(ID_PARAM, ParseUUIDPipe) uuid: string, @Body() dto: UpdateProjectDto) {
     return this.projects.update(uuid, dto);
+  }
+
+  @Get(API_SUB.PROJECT_STATS)
+  @ApiOperation({ summary: 'Get cost statistics for a project' })
+  @ApiOkResponse({ type: ProjectStatsDto })
+  stats(@Param(ID_PARAM, ParseUUIDPipe) uuid: string) {
+    return this.analytics.projectStats(uuid);
   }
 
   @Post(API_SUB.PROJECT_MOVE_ALL)

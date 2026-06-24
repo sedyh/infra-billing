@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@generated/prisma/client';
 import Decimal from 'decimal.js';
 import dayjs from 'dayjs';
-import { AnalyticsSummary, BalancePoint, ForecastPoint, Period } from '@infra/shared';
+import { AnalyticsSummary, BalancePoint, ForecastPoint, Period, ProjectStats } from '@infra/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { CurrencyService } from '../currency/currency.service';
 import { monthlyCost } from '@common/money';
@@ -192,6 +192,62 @@ export class AnalyticsService {
         servicesCount: v.count,
       })),
       upcomingBillings,
+    };
+  }
+
+  /** Cost statistics for a single project (active services only), in the base currency. */
+  async projectStats(projectUuid: string): Promise<ProjectStats> {
+    const project = await this.prisma.project.findUnique({ where: { uuid: projectUuid } });
+    if (!project) throw new NotFoundException('Project not found');
+
+    const { baseCurrency } = await this.currency.getEffectiveSettings();
+    const rates = await this.currency.getRubRates();
+    const [providers, services] = await Promise.all([
+      this.prisma.provider.findMany(),
+      this.prisma.service.findMany({ where: { isActive: true, projectUuid } }),
+    ]);
+    const providerName = new Map(providers.map((p) => [p.uuid, p.name]));
+
+    let monthlyTotal = ZERO();
+    const byProvider = new Map<string, Agg>();
+    const byCountry = new Map<string, Agg>();
+    const byType = new Map<string, Agg>();
+    for (const s of services) {
+      const monthlyBase = this.currency.convert(
+        monthlyCost(new Decimal(s.cost.toString()), s.period as Period),
+        s.currency,
+        baseCurrency,
+        rates,
+      );
+      monthlyTotal = monthlyTotal.add(monthlyBase);
+      bump(byProvider, s.providerUuid, monthlyBase);
+      bump(byCountry, s.countryCode ?? 'XX', monthlyBase);
+      bump(byType, s.type, monthlyBase);
+    }
+
+    return {
+      projectUuid: project.uuid,
+      name: project.name,
+      baseCurrency,
+      monthlyTotal: monthlyTotal.toFixed(2),
+      yearlyProjection: monthlyTotal.mul(12).toFixed(2),
+      servicesCount: services.length,
+      byType: [...byType].map(([type, v]) => ({
+        type,
+        monthlyCost: v.monthly.toFixed(2),
+        servicesCount: v.count,
+      })),
+      byCountry: [...byCountry].map(([countryCode, v]) => ({
+        countryCode,
+        monthlyCost: v.monthly.toFixed(2),
+        servicesCount: v.count,
+      })),
+      byProvider: [...byProvider].map(([providerUuid, v]) => ({
+        providerUuid,
+        name: providerName.get(providerUuid) ?? '',
+        monthlyCost: v.monthly.toFixed(2),
+        servicesCount: v.count,
+      })),
     };
   }
 

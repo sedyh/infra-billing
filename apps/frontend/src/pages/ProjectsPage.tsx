@@ -3,6 +3,7 @@ import {
   ActionIcon,
   Badge,
   Button,
+  CopyButton,
   Group,
   Modal,
   Stack,
@@ -16,6 +17,8 @@ import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 import {
+  IconCheck,
+  IconCopy,
   IconEdit,
   IconFolderMinus,
   IconFolderPlus,
@@ -149,6 +152,17 @@ export function ProjectsPage() {
                   <Table.Td ta="end">{p.servicesCount ?? 0}</Table.Td>
                   <Table.Td>
                     <Group gap={4} justify="flex-end" wrap="nowrap">
+                      <CopyButton value={p.uuid}>
+                        {({ copied, copy }) => (
+                          <Tooltip
+                            label={copied ? t('projects.uuidCopied') : t('projects.copyUuid')}
+                          >
+                            <ActionIcon variant="subtle" color="gray" onClick={copy}>
+                              {copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
+                            </ActionIcon>
+                          </Tooltip>
+                        )}
+                      </CopyButton>
                       <Tooltip label={t('projects.actionMoveAll')}>
                         <ActionIcon
                           variant="subtle"

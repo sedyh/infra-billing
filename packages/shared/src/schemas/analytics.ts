@@ -31,6 +31,28 @@ export const byProjectSchema = z.object({
   servicesCount: z.number().int().describe('Number of services'),
 });
 
+/** A provider's contribution within a single project (no balance/spend — those are account-level). */
+export const projectProviderStatSchema = z.object({
+  providerUuid: uuidSchema.describe('Provider UUID'),
+  name: z.string().describe('Provider name'),
+  monthlyCost: moneySchema.describe('Monthly cost in base currency'),
+  servicesCount: z.number().int().describe('Number of services'),
+});
+
+/** Cost statistics for a single project (active services only), in the base currency. */
+export const projectStatsSchema = z.object({
+  projectUuid: uuidSchema.describe('Project UUID'),
+  name: z.string().describe('Project name'),
+  baseCurrency: currencySchema.describe('Base currency code'),
+  monthlyTotal: moneySchema.describe('Total monthly cost'),
+  yearlyProjection: moneySchema.describe('Projected yearly cost'),
+  servicesCount: z.number().int().describe('Number of active services'),
+  byType: z.array(byTypeSchema).describe('Breakdown by service type'),
+  byCountry: z.array(byCountrySchema).describe('Breakdown by country'),
+  byProvider: z.array(projectProviderStatSchema).describe('Breakdown by provider'),
+});
+export type ProjectStats = z.infer<typeof projectStatsSchema>;
+
 export const byCurrencySchema = z.object({
   currency: currencySchema.describe('Currency code'),
   monthlyCostOriginal: moneySchema.describe('Monthly cost in original currency'),

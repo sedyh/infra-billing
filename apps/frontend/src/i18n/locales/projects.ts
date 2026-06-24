@@ -15,6 +15,8 @@ export const projects = {
     faviconHint: 'A logo image URL, or a site domain to use its favicon',
     faviconPlaceholder: 'https://example.com/logo.png',
     confirmDelete: 'Delete "{{name}}"? Its services will move to the default project.',
+    copyUuid: 'Copy UUID',
+    uuidCopied: 'Copied',
     actionMoveAll: 'Move all services here',
     actionRemoveAll: 'Move all services to the default project',
     confirmMoveAll:
@@ -39,6 +41,8 @@ export const projects = {
     faviconHint: 'Ссылка на изображение-логотип или домен сайта (возьмём его favicon)',
     faviconPlaceholder: 'https://example.com/logo.png',
     confirmDelete: 'Удалить «{{name}}»? Его сервисы переедут в дефолтный проект.',
+    copyUuid: 'Скопировать UUID',
+    uuidCopied: 'Скопировано',
     actionMoveAll: 'Переместить сюда все сервисы',
     actionRemoveAll: 'Переместить все сервисы в дефолтный проект',
     confirmMoveAll:

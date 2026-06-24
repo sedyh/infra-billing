@@ -43,6 +43,7 @@ export const API_SUB = {
   AUTH_PASSKEY_BY_ID: `passkeys/${ID}`,
   PROJECT_MOVE_ALL: `${ID}/move-all`,
   PROJECT_EMPTY: `${ID}/empty`,
+  PROJECT_STATS: `${ID}/stats`,
   PROVIDER_SYNC_ALL: 'sync-all',
   PROVIDER_SYNC: `${ID}/sync`,
   PROVIDER_SYNC_RUNS: `${ID}/sync-runs`,
@@ -95,6 +96,7 @@ export const API_PATH = {
     BY_ID: (uuid: string) => pathId(API.PROJECTS, API_SUB.BY_ID, uuid),
     MOVE_ALL: (uuid: string) => pathId(API.PROJECTS, API_SUB.PROJECT_MOVE_ALL, uuid),
     EMPTY: (uuid: string) => pathId(API.PROJECTS, API_SUB.PROJECT_EMPTY, uuid),
+    STATS: (uuid: string) => pathId(API.PROJECTS, API_SUB.PROJECT_STATS, uuid),
   },
   SERVICES: {
     ROOT: path(API.SERVICES),
