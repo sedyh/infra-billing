@@ -48,6 +48,9 @@ export const services = {
     paymentCharge: 'charge',
     paymentTopup: 'payment',
     paymentsEmpty: 'No payments for this service',
+    metaTooltip: 'Metadata',
+    metaTitle: 'Metadata · {{name}}',
+    metaEmpty: 'No metadata',
   },
   ru: {
     title: 'Сервисы',
@@ -97,5 +100,8 @@ export const services = {
     paymentCharge: 'списание',
     paymentTopup: 'платёж',
     paymentsEmpty: 'Нет платежей по этому сервису',
+    metaTooltip: 'Метаданные',
+    metaTitle: 'Метаданные · {{name}}',
+    metaEmpty: 'Нет метаданных',
   },
 };

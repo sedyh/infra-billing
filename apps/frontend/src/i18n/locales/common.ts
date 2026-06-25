@@ -13,6 +13,8 @@ export const common = {
       deleted: 'Deleted',
       refresh: 'Refresh',
       optional: 'optional',
+      copy: 'Copy',
+      copied: 'Copied',
     },
     app: {
       brand: 'Infra Billing',
@@ -139,6 +141,8 @@ export const common = {
       deleted: 'Удалено',
       refresh: 'Обновить',
       optional: 'необязательно',
+      copy: 'Копировать',
+      copied: 'Скопировано',
     },
     app: {
       brand: 'Infra Billing',

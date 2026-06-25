@@ -3,6 +3,7 @@ import {
   ActionIcon,
   Badge,
   Button,
+  CopyButton,
   Group,
   Modal,
   Select,
@@ -19,7 +20,16 @@ import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { useTranslation } from 'react-i18next';
 import { notifyError, notifySuccess } from '@/utils/notify';
-import { IconEdit, IconMapPin, IconPlus, IconReceipt2, IconTrash } from '@tabler/icons-react';
+import {
+  IconBraces,
+  IconCheck,
+  IconCopy,
+  IconEdit,
+  IconMapPin,
+  IconPlus,
+  IconReceipt2,
+  IconTrash,
+} from '@tabler/icons-react';
 import dayjs from 'dayjs';
 import { DEFAULT_PROJECT_UUID, type Period, type Service, type ServiceType } from '@infra/shared';
 import {
@@ -38,6 +48,7 @@ import { countryFlag, formatDateShort, formatMoney, trimMoney } from '@/utils/fo
 import { projectFavicon, providerFavicon } from '@/utils/favicon';
 import { useCountryOptions } from '@/utils/countries';
 import { ProviderIcon } from '@/components/ProviderIcon';
+import { JsonView } from '@/components/JsonView';
 
 // Only physically-hosted resources carry a country — show the flag for these types only
 // (domains/licenses/etc. would otherwise render a meaningless blank flag).
@@ -72,6 +83,7 @@ export function ServicesPage() {
   const [opened, { open, close }] = useDisclosure(false);
   const [editing, setEditing] = useState<Service | null>(null);
   const [paymentsFor, setPaymentsFor] = useState<Service | null>(null);
+  const [metaFor, setMetaFor] = useState<Service | null>(null);
   const servicePayments = usePayments(
     { serviceUuid: paymentsFor?.uuid },
     { enabled: Boolean(paymentsFor), pageSize: 100 },
@@ -322,6 +334,13 @@ export function ServicesPage() {
                         </ActionIcon>
                       </Tooltip>
                     )}
+                    {Object.keys(s.meta ?? {}).length > 0 && (
+                      <Tooltip label={t('services.metaTooltip')}>
+                        <ActionIcon variant="subtle" onClick={() => setMetaFor(s)}>
+                          <IconBraces size={16} />
+                        </ActionIcon>
+                      </Tooltip>
+                    )}
                     <ActionIcon variant="subtle" onClick={() => openEdit(s)}>
                       <IconEdit size={16} />
                     </ActionIcon>
@@ -490,6 +509,34 @@ export function ServicesPage() {
               </Table.Tbody>
             </Table>
           </Table.ScrollContainer>
+        )}
+      </Modal>
+
+      <Modal
+        opened={!!metaFor}
+        onClose={() => setMetaFor(null)}
+        title={t('services.metaTitle', { name: metaFor?.name ?? '' })}
+        size="lg"
+      >
+        {metaFor && Object.keys(metaFor.meta ?? {}).length > 0 ? (
+          <Stack gap="xs">
+            <Group justify="flex-end">
+              <CopyButton value={JSON.stringify(metaFor.meta, null, 2)} timeout={1500}>
+                {({ copied, copy }) => (
+                  <Tooltip label={copied ? t('common.copied') : t('common.copy')}>
+                    <ActionIcon variant="subtle" color={copied ? 'teal' : 'gray'} onClick={copy}>
+                      {copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
+                    </ActionIcon>
+                  </Tooltip>
+                )}
+              </CopyButton>
+            </Group>
+            <JsonView data={metaFor.meta} />
+          </Stack>
+        ) : (
+          <Text c="dimmed" py="md" ta="center">
+            {t('services.metaEmpty')}
+          </Text>
         )}
       </Modal>
     </Stack>
