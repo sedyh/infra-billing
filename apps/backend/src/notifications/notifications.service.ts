@@ -5,6 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { AnalyticsService } from '../analytics/analytics.service';
 import {
   lowBalanceMessage,
+  lowRunwayMessage,
   sampleMessages,
   syncErrorMessage,
   upcomingBillingMessage,
@@ -39,6 +40,14 @@ export class NotificationsService {
       if (ub.severity !== 'critical') continue;
       const html = lowBalanceMessage(ub, summary.baseCurrency);
       if (await this.maybeSend(`low-balance:${ub.serviceUuid}`, html)) sent += 1;
+    }
+
+    // 1b) Low runway — a prepaid provider (no dated charge) whose balance is estimated to drain
+    //     within ~3 days (severity "critical": same threshold as the dashboard runway card).
+    for (const r of summary.balanceRunway) {
+      if (r.severity !== 'critical') continue;
+      const html = lowRunwayMessage(r);
+      if (await this.maybeSend(`runway:${r.providerUuid}`, html)) sent += 1;
     }
 
     // 2) Upcoming billings within N days.

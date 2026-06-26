@@ -6,6 +6,7 @@ import { AnalyticsSummary, BalancePoint, ForecastPoint, Period, ProjectStats } f
 import { PrismaService } from '../prisma/prisma.service';
 import { CurrencyService } from '../currency/currency.service';
 import { monthlyCost } from '@common/money';
+import { burnFromMonthlyCost, burnFromSnapshots, daysOfRunway } from '@common/runway';
 
 const ZERO = () => new Decimal(0);
 
@@ -111,7 +112,8 @@ export class AnalyticsService {
     for (const p of providers) {
       runningBalance.set(
         p.uuid,
-        p.balance != null && p.balanceCurrency
+        // Postpaid providers (invoice-billed) carry no prepaid funds → balance is unknown here.
+        p.balance != null && p.balanceCurrency && !p.isPostpaid
           ? this.currency.convert(
               new Decimal(p.balance.toString()),
               p.balanceCurrency,
@@ -154,6 +156,82 @@ export class AnalyticsService {
       };
     });
 
+    // Balance runway: prepaid providers with a draining balance but no upcoming dated charge.
+    // Estimate days-left from snapshot decline (fallback: monthly service cost), and reuse the
+    // charge-coverage severity model. A provider with any dated service is governed by the dated
+    // logic above (even if the date is beyond the upcoming window), so it's not a runway candidate.
+    const datedProviderUuids = new Set(
+      services.filter((s) => s.nextBillingAt != null).map((s) => s.providerUuid),
+    );
+    const runwayWindowStart = now.subtract(30, 'day').toDate();
+    const snapshots = await this.prisma.balanceSnapshot.findMany({
+      where: { capturedAt: { gte: runwayWindowStart } },
+      orderBy: { capturedAt: 'asc' },
+    });
+    const snapsByProvider = new Map<string, typeof snapshots>();
+    for (const snap of snapshots) {
+      const list = snapsByProvider.get(snap.providerUuid);
+      if (list) list.push(snap);
+      else snapsByProvider.set(snap.providerUuid, [snap]);
+    }
+
+    const balanceRunway: AnalyticsSummary['balanceRunway'] = [];
+    for (const p of providers) {
+      if (p.balance == null || !p.balanceCurrency) continue;
+      if (p.isPostpaid) continue; // invoice-billed → balance isn't prepaid funds
+      if (datedProviderUuids.has(p.uuid)) continue;
+      const balance = new Decimal(p.balance.toString());
+
+      // Primary: actual decline measured from snapshots (in the provider's balance currency).
+      const points = (snapsByProvider.get(p.uuid) ?? [])
+        .filter((snap) => snap.currency === p.balanceCurrency)
+        .map((snap) => ({
+          balance: new Decimal(snap.balance.toString()),
+          capturedAt: snap.capturedAt,
+        }));
+      let burn = burnFromSnapshots(points);
+      let basis: 'snapshots' | 'services' = 'snapshots';
+      if (burn == null) {
+        // Fallback: sum the provider's active services' monthly cost in the balance currency.
+        let monthly = ZERO();
+        for (const s of services) {
+          if (s.providerUuid !== p.uuid) continue;
+          monthly = monthly.add(
+            this.currency.convert(
+              monthlyCost(new Decimal(s.cost.toString()), s.period as Period),
+              s.currency,
+              p.balanceCurrency,
+              rates,
+            ),
+          );
+        }
+        burn = burnFromMonthlyCost(monthly);
+        basis = 'services';
+      }
+      if (burn == null) continue; // no measurable spend → can't estimate
+
+      const daysLeft = daysOfRunway(balance, burn);
+      let severity: 'critical' | 'warning' | 'ok';
+      if (daysLeft <= 3) severity = 'critical';
+      else if (daysLeft <= 7) severity = 'warning';
+      else severity = 'ok';
+      if (severity === 'ok') continue; // > 7 days of runway → not surfaced
+
+      balanceRunway.push({
+        providerUuid: p.uuid,
+        providerName: p.name,
+        providerLoginUrl: p.loginUrl ?? null,
+        balance: balance.toFixed(2),
+        currency: p.balanceCurrency,
+        burnPerDay: burn.toFixed(2),
+        daysLeft,
+        depletionAt: now.add(daysLeft, 'day').toISOString(),
+        basis,
+        severity,
+      });
+    }
+    balanceRunway.sort((a, b) => a.daysLeft - b.daysLeft);
+
     return {
       baseCurrency,
       monthlyTotal: monthlyTotal.toFixed(2),
@@ -192,6 +270,7 @@ export class AnalyticsService {
         servicesCount: v.count,
       })),
       upcomingBillings,
+      balanceRunway,
     };
   }
 

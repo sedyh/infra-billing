@@ -9,6 +9,7 @@ model Provider {
   balance         Decimal?  @db.Decimal(14, 2) @map("balance")
   balanceCurrency String?   @map("balance_currency")
   balanceSyncedAt DateTime? @map("balance_synced_at")
+  isPostpaid      Boolean   @default(false) @map("is_postpaid")
   lastSyncAt      DateTime? @map("last_sync_at")
   lastSyncError   String?   @map("last_sync_error")
 

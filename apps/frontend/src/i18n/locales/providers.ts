@@ -62,6 +62,8 @@ export const providers = {
       porkbunApiKeyDesc: 'Porkbun → Account → API Access → create an API key',
       porkbunSecretKey: 'Secret API key',
       loginUrl: 'Account link',
+      isPostpaid: 'Invoice-billed (postpaid)',
+      isPostpaidDesc: 'Balance is not prepaid funds — exclude from low-balance and runway warnings',
     },
     keepEmpty: 'leave empty to keep unchanged',
     err: {
@@ -159,6 +161,8 @@ export const providers = {
       porkbunApiKeyDesc: 'Porkbun → Account → API Access → создать API-ключ',
       porkbunSecretKey: 'Секретный API-ключ',
       loginUrl: 'Ссылка на ЛК',
+      isPostpaid: 'Оплата по инвойсам (постоплата)',
+      isPostpaidDesc: 'Баланс — не предоплата; не учитывать в предупреждениях о нехватке и запасе',
     },
     keepEmpty: 'оставьте пустым, чтобы не менять',
     err: {

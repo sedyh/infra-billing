@@ -72,6 +72,7 @@ export class ProvidersService {
         name: dto.name,
         kind: dto.kind,
         loginUrl: dto.loginUrl ?? null,
+        isPostpaid: dto.isPostpaid ?? false,
         credentialsEnc: this.buildCredentials(dto.kind, dto),
       },
       include: COUNT_INCLUDE,
@@ -88,6 +89,7 @@ export class ProvidersService {
     const data: Prisma.ProviderUpdateInput = {};
     if (dto.name !== undefined) data.name = dto.name;
     if (dto.loginUrl !== undefined) data.loginUrl = dto.loginUrl;
+    if (dto.isPostpaid !== undefined) data.isPostpaid = dto.isPostpaid;
     // Merge onto existing credentials so a partial edit works — e.g. adding only a TOTP
     // secret to an existing BILLmanager provider without re-entering the password.
     const creds = this.buildCredentials(existing.kind, dto, existing.credentialsEnc);

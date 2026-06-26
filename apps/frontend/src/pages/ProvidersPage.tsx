@@ -3,6 +3,7 @@ import {
   ActionIcon,
   Badge,
   Button,
+  Checkbox,
   Group,
   Modal,
   PasswordInput,
@@ -58,6 +59,7 @@ interface FormValues {
   panelId: string;
   apiPassword: string;
   secretKey: string;
+  isPostpaid: boolean;
 }
 
 const EMPTY_FORM: FormValues = {
@@ -74,6 +76,7 @@ const EMPTY_FORM: FormValues = {
   panelId: '',
   apiPassword: '',
   secretKey: '',
+  isPostpaid: false,
 };
 
 // The default Mantine/recharts Y-axis starts at 0, so a near-flat balance line (e.g. a steady 36)
@@ -142,6 +145,7 @@ export function ProvidersPage() {
       accountId: p.accountId ?? '',
       projectName: p.projectName ?? '',
       panelId: p.panelId ?? '',
+      isPostpaid: p.isPostpaid,
     });
     open();
   };
@@ -208,13 +212,19 @@ export function ProvidersPage() {
       if (editing) {
         saved = await update.mutateAsync({
           uuid: editing.uuid,
-          dto: { name: v.name, loginUrl: v.loginUrl || undefined, ...creds },
+          dto: {
+            name: v.name,
+            loginUrl: v.loginUrl || undefined,
+            isPostpaid: v.isPostpaid,
+            ...creds,
+          },
         });
       } else {
         saved = await create.mutateAsync({
           name: v.name,
           kind: v.kind as ProviderKind,
           loginUrl: v.loginUrl || undefined,
+          isPostpaid: v.isPostpaid,
           ...creds,
         });
       }
@@ -566,6 +576,11 @@ export function ProvidersPage() {
               )
             )}
             <TextInput label={t('providers.field.loginUrl')} {...form.getInputProps('loginUrl')} />
+            <Checkbox
+              label={t('providers.field.isPostpaid')}
+              description={t('providers.field.isPostpaidDesc')}
+              {...form.getInputProps('isPostpaid', { type: 'checkbox' })}
+            />
             <Button type="submit" loading={create.isPending || update.isPending}>
               {t('common.save')}
             </Button>

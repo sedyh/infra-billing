@@ -69,6 +69,8 @@ export function DashboardPage() {
   }));
   const upcoming = summary?.upcomingBillings ?? [];
   const critical = upcoming.filter((b) => b.severity === 'critical');
+  const runway = summary?.balanceRunway ?? [];
+  const runwayCritical = runway.filter((r) => r.severity === 'critical');
   const providerRows = [...(summary?.byProvider ?? [])].sort(
     (a, b) => Number(b.spent) - Number(a.spent),
   );
@@ -145,6 +147,25 @@ export function DashboardPage() {
                   t('dashboard.critical.balance', {
                     amount: formatMoney(b.providerBalance, b.providerBalanceCurrency),
                   })}
+              </Text>
+            ))}
+          </Stack>
+        </Alert>
+      )}
+
+      {runwayCritical.length > 0 && (
+        <Alert
+          color="red"
+          icon={<IconAlertTriangle size={18} />}
+          title={t('dashboard.runway.criticalTitle')}
+        >
+          <Stack gap={4}>
+            {runwayCritical.map((r) => (
+              <Text key={r.providerUuid} size="sm">
+                <b>{r.providerName}</b>:{' '}
+                {t('dashboard.runway.runsOut', { when: dayLabel(r.daysLeft) })} ·{' '}
+                {t('dashboard.runway.perDay', { amount: formatMoney(r.burnPerDay, r.currency) })}
+                {t('dashboard.runway.balance', { amount: formatMoney(r.balance, r.currency) })}
               </Text>
             ))}
           </Stack>
@@ -365,6 +386,40 @@ export function DashboardPage() {
           </Text>
         )}
       </Card>
+
+      {runway.length > 0 && (
+        <Card withBorder radius="md" padding="lg">
+          <Text fw={600}>{t('dashboard.runway.title')}</Text>
+          <Text c="dimmed" size="xs" mb="md">
+            {t('dashboard.runway.subtitle')}
+          </Text>
+          <Stack gap="xs">
+            {runway.map((r) => {
+              const color = severityColor(r.severity);
+              return (
+                <Group key={r.providerUuid} justify="space-between" wrap="nowrap">
+                  <Text size="sm" c={color} style={{ whiteSpace: 'nowrap' }}>
+                    <b>{r.providerName}</b>
+                  </Text>
+                  <Group gap="sm" wrap="nowrap">
+                    <Badge size="sm" variant={color ? 'light' : 'default'} color={color}>
+                      {dayLabel(r.daysLeft)}
+                    </Badge>
+                    <Text size="sm" c="dimmed">
+                      {t('dashboard.runway.perDay', {
+                        amount: formatMoney(r.burnPerDay, r.currency),
+                      })}
+                    </Text>
+                    <Text size="sm" fw={600}>
+                      {formatMoney(r.balance, r.currency)}
+                    </Text>
+                  </Group>
+                </Group>
+              );
+            })}
+          </Stack>
+        </Card>
+      )}
     </Stack>
   );
 }

@@ -14,6 +14,15 @@ export const dashboard = {
       charge: 'charge {{when}} of {{amount}}',
       balance: ' · balance {{amount}}',
     },
+    runway: {
+      criticalTitle: 'Critical: balance running out',
+      title: 'Balance runway',
+      subtitle: 'Estimated days left, based on balance history',
+      runsOut: 'runs out {{when}}',
+      perDay: '≈{{amount}}/day',
+      balance: ' · balance {{amount}}',
+      empty: 'No providers running low',
+    },
     charts: {
       byType: 'Expenses by type ({{base}}/mo)',
       forecast: 'Spend by month ({{base}})',
@@ -63,6 +72,15 @@ export const dashboard = {
       title: 'Критично: не хватит на списание',
       charge: 'списание {{when}} на {{amount}}',
       balance: ' · баланс {{amount}}',
+    },
+    runway: {
+      criticalTitle: 'Критично: баланс заканчивается',
+      title: 'Запас баланса',
+      subtitle: 'Оценка по истории баланса — на сколько хватит',
+      runsOut: 'кончится {{when}}',
+      perDay: '≈{{amount}}/день',
+      balance: ' · баланс {{amount}}',
+      empty: 'Нет провайдеров на исходе',
     },
     charts: {
       byType: 'Расходы по типам ({{base}}/мес)',

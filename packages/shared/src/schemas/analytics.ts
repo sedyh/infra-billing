@@ -82,6 +82,26 @@ export const upcomingBillingSchema = z.object({
   severity: billingSeveritySchema.describe('Billing severity level'),
 });
 
+/**
+ * Estimated balance depletion for a prepaid provider that has no upcoming dated charge.
+ * Burn rate is inferred from balance-snapshot decline (or, with too little history, the sum of
+ * the provider's services' monthly cost). All money is in the provider's own balance currency.
+ */
+export const balanceRunwaySchema = z.object({
+  providerUuid: uuidSchema.describe('Provider UUID'),
+  providerName: z.string().describe('Provider name'),
+  providerLoginUrl: z.string().describe('Provider cabinet link').nullable(),
+  balance: moneySchema.describe('Current balance'),
+  currency: currencySchema.describe('Balance currency'),
+  burnPerDay: moneySchema.describe('Estimated daily spend in balance currency'),
+  daysLeft: z.number().int().describe('Estimated whole days until depletion'),
+  depletionAt: isoDateSchema.describe('Estimated depletion date'),
+  // How the burn rate was derived: actual snapshot decline, or service monthly cost.
+  basis: z.enum(['snapshots', 'services']).describe('Burn-rate basis'),
+  severity: billingSeveritySchema.describe('Runway severity level'),
+});
+export type BalanceRunway = z.infer<typeof balanceRunwaySchema>;
+
 export const analyticsSummarySchema = z.object({
   baseCurrency: currencySchema.describe('Base currency code'),
   monthlyTotal: moneySchema.describe('Total monthly cost'),
@@ -94,6 +114,8 @@ export const analyticsSummarySchema = z.object({
   byType: z.array(byTypeSchema).describe('Breakdown by service type'),
   byCurrency: z.array(byCurrencySchema).describe('Breakdown by currency'),
   upcomingBillings: z.array(upcomingBillingSchema).describe('Upcoming billings'),
+  // Prepaid providers (no dated charge) whose balance is estimated to run out soon.
+  balanceRunway: z.array(balanceRunwaySchema).describe('Estimated balance runway'),
 });
 export type AnalyticsSummary = z.infer<typeof analyticsSummarySchema>;
 

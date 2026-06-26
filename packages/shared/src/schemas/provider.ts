@@ -11,6 +11,8 @@ export const providerSchema = z.object({
   loginUrl: z.string().describe('Control panel URL').nullable(),
   balance: moneySchema.describe('Account balance').nullable(),
   balanceCurrency: currencySchema.describe('Balance currency').nullable(),
+  // Invoice-billed (postpaid): balance is not prepaid funds → excluded from balance warnings.
+  isPostpaid: z.boolean().describe('Invoice-billed / postpaid'),
   balanceSyncedAt: isoDateSchema.describe('Balance update time').nullable(),
   lastSyncAt: isoDateSchema.describe('Last successful sync').nullable(),
   lastSyncError: z.string().describe('Last sync error').nullable(),
@@ -56,6 +58,7 @@ export const createProviderSchema = z.object({
   name: z.string().min(1).describe('Display name'),
   kind: providerKindSchema.describe('Connector kind'),
   loginUrl: z.string().url().describe('Control panel URL').optional(),
+  isPostpaid: z.boolean().describe('Invoice-billed / postpaid').optional(),
   ...credentialFields,
 });
 export type CreateProvider = z.infer<typeof createProviderSchema>;
@@ -63,6 +66,7 @@ export type CreateProvider = z.infer<typeof createProviderSchema>;
 export const updateProviderSchema = z.object({
   name: z.string().min(1).describe('Display name').optional(),
   loginUrl: z.string().url().describe('Control panel URL').nullable().optional(),
+  isPostpaid: z.boolean().describe('Invoice-billed / postpaid').optional(),
   ...credentialFields,
 });
 export type UpdateProvider = z.infer<typeof updateProviderSchema>;

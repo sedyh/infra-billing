@@ -25,6 +25,7 @@ export function mapProvider(
     loginUrl: p.loginUrl,
     balance: decimalToString(p.balance),
     balanceCurrency: p.balanceCurrency,
+    isPostpaid: p.isPostpaid,
     balanceSyncedAt: dateToIso(p.balanceSyncedAt),
     lastSyncAt: dateToIso(p.lastSyncAt),
     lastSyncError: p.lastSyncError,

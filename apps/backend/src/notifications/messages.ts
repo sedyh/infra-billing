@@ -1,6 +1,7 @@
 import type { AnalyticsSummary } from '@infra/shared';
 
 type UpcomingBilling = AnalyticsSummary['upcomingBillings'][number];
+type BalanceRunway = AnalyticsSummary['balanceRunway'][number];
 
 export const EMOJI = {
   lowBalance: '<tg-emoji emoji-id="5258474669769497337">❗</tg-emoji>',
@@ -53,6 +54,12 @@ function whenLabel(daysUntil: number): string {
   return `через ${daysUntil} ${ruDays(daysUntil)}`;
 }
 
+/** "~N дн." for an estimated runway; "меньше суток" when the balance is essentially gone. */
+function runwayLabel(days: number): string {
+  if (days <= 0) return 'меньше суток';
+  return `~${days} ${ruDays(days)}`;
+}
+
 /** Low balance: an imminent charge the provider balance won't cover. */
 export function lowBalanceMessage(ub: UpcomingBilling, baseCurrency: string): string {
   return (
@@ -61,6 +68,16 @@ export function lowBalanceMessage(ub: UpcomingBilling, baseCurrency: string): st
     `${EMOJI.service} ${esc(ub.name)}\n\n` +
     `${EMOJI.clock} Списание <code>${esc(ub.costBase)} ${esc(baseCurrency)}</code> ${whenLabel(ub.daysUntil)} — баланса не хватит.\n` +
     `${EMOJI.balance} Баланс: <code>${esc(ub.providerBalance ?? '0')} ${esc(ub.providerBalanceCurrency ?? '')}</code>`
+  );
+}
+
+/** Low runway: a prepaid provider whose balance is estimated to drain in a few days. */
+export function lowRunwayMessage(r: BalanceRunway): string {
+  return (
+    `${EMOJI.balance} <b>Запас кончается</b>\n\n` +
+    `${EMOJI.provider} ${providerLink(r.providerName, r.providerLoginUrl)}\n\n` +
+    `${EMOJI.clock} Баланса хватит ещё на ${runwayLabel(r.daysLeft)} (трата ≈<code>${esc(r.burnPerDay)} ${esc(r.currency)}</code>/день).\n` +
+    `${EMOJI.balance} Баланс: <code>${esc(r.balance)} ${esc(r.currency)}</code>`
   );
 }
 
@@ -110,9 +127,22 @@ export function sampleMessages(): string[] {
     covered: false,
     severity: 'critical',
   };
+  const sampleRunway: BalanceRunway = {
+    providerUuid: '00000000-0000-0000-0000-000000000000',
+    providerName: 'Тестовый провайдер',
+    providerLoginUrl: 'https://example.com',
+    balance: '14.30',
+    currency: 'USD',
+    burnPerDay: '0.80',
+    daysLeft: 3,
+    depletionAt: new Date(Date.now() + 3 * 86_400_000).toISOString(),
+    basis: 'snapshots',
+    severity: 'critical',
+  };
   return [
     `${EMOJI.samples} <b>Проверка уведомлений</b> — примеры всех типов ниже:`,
     lowBalanceMessage(sample, 'RUB'),
+    lowRunwayMessage(sampleRunway),
     upcomingBillingMessage(sample, inTwoDays),
     syncErrorMessage('Тестовый провайдер', 'HTTP 401: неверный API-токен', 'https://example.com'),
   ];
