@@ -11,13 +11,13 @@ import { cssVariablesResolver, theme } from './theme';
 import { RequireAuth } from './auth/RequireAuth';
 import { AppLayout } from './layout/AppLayout';
 import { LoginPage } from './pages/LoginPage';
-import { DashboardPage } from './pages/DashboardPage';
-import { ProvidersPage } from './pages/ProvidersPage';
-import { ProjectsPage } from './pages/ProjectsPage';
-import { ServicesPage } from './pages/ServicesPage';
-import { PaymentsPage } from './pages/PaymentsPage';
-import { SettingsPage } from './pages/SettingsPage';
-import { AuthSettingsPage } from './pages/AuthSettingsPage';
+import { DashboardPage } from './pages/dashboard/DashboardPage';
+import { ProvidersPage } from './pages/providers/ProvidersPage';
+import { ProjectsPage } from './pages/projects/ProjectsPage';
+import { ServicesPage } from './pages/services/ServicesPage';
+import { PaymentsPage } from './pages/payments/PaymentsPage';
+import { SettingsPage } from './pages/settings/SettingsPage';
+import { AuthSettingsPage } from './pages/auth-settings/AuthSettingsPage';
 import { TokensPage } from './pages/TokensPage';
 
 const queryClient = new QueryClient({
