@@ -4,8 +4,10 @@ import { useTranslation } from 'react-i18next';
 import type { Project, Provider, Service } from '@infra/shared';
 import { EntityLabel } from '@/components/EntityLabel';
 import { projectFavicon, providerFavicon } from '@/utils/favicon';
-import { countryFlag, formatDateShort, formatMoney } from '@/utils/format';
+import { countryFlag, formatDateShort, formatMoney, truncate } from '@/utils/format';
 import { LOCATED_TYPES, ServiceTypeIcon } from './ServiceTypeIcon';
+
+const NAME_MAX_LENGTH = 40;
 
 interface ServicesTableProps {
   services: Service[] | undefined;
@@ -62,7 +64,9 @@ export function ServicesTable({
                     ) : (
                       <ServiceTypeIcon type={s.type} />
                     )}
-                    <Text fw={600}>{s.name}</Text>
+                    <Tooltip label={s.name} disabled={s.name.length <= NAME_MAX_LENGTH}>
+                      <Text fw={600}>{truncate(s.name, NAME_MAX_LENGTH)}</Text>
+                    </Tooltip>
                     {!s.isActive && (
                       <Badge size="xs" color="gray">
                         {t('services.badgeInactive')}

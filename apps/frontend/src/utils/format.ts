@@ -28,6 +28,11 @@ export function formatDateShort(iso: string | null | undefined): string {
   return iso ? dayjs(iso).format('DD.MM.YYYY') : '—';
 }
 
+/** Truncate text to maxLength chars, appending "…" when cut. */
+export function truncate(text: string, maxLength: number): string {
+  return text.length > maxLength ? `${text.slice(0, maxLength)}…` : text;
+}
+
 /** Country code (ISO 3166-1 alpha-2) → flag emoji. */
 export function countryFlag(code: string | null | undefined): string {
   if (code?.length !== 2 || code === 'XX') return '🏳️';
