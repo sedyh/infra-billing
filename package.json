@@ -2,7 +2,7 @@
   "name": "infra-billing",
   "version": "0.22.0",
   "private": true,
-  "description": "Personal self-hosted infra billing panel (NestJS + React/TS/Mantine, PostgreSQL via Prisma)",
+  "description": "Personal self-hosted infra billing panel (NestJS + React/TS + shadcn/ui, PostgreSQL via Prisma)",
   "workspaces": [
     "packages/*",
     "apps/*"

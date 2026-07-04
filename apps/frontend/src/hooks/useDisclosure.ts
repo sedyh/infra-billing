@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 
-/** Drop-in replacement for useDisclosure from @mantine/hooks with the same call contract. */
+/** Shared open/close state for modals and popovers: `[opened, { open, close, toggle }]`. */
 export function useDisclosure(
   initial = false,
 ): [boolean, { open: () => void; close: () => void; toggle: () => void }] {
