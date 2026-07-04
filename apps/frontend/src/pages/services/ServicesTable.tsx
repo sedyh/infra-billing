@@ -1,6 +1,7 @@
 import type { Project, Provider, Service } from '@infra/shared';
 import { useTranslation } from 'react-i18next';
 import { EntityLabel } from '@/components/EntityLabel';
+import { SortableTableHead } from '@/components/SortableTableHead';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import {
@@ -12,9 +13,11 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import type { SortState } from '@/hooks/useTableSort';
 import { cn } from '@/lib/utils';
 import { projectFavicon, providerFavicon } from '@/utils/favicon';
 import { countryFlag, formatCost, formatDateShort, truncate } from '@/utils/format';
+import type { ServiceSortKey } from './servicesSort';
 import { LOCATED_TYPES, ServiceTypeIcon } from './ServiceTypeIcon';
 
 const NAME_MAX_LENGTH = 40;
@@ -26,6 +29,8 @@ interface ServicesTableProps {
   projectOf: (uuid: string) => Project | undefined;
   serviceTypeLabel: (type: string) => string;
   periodLabel: (period: string) => string;
+  sort: SortState<ServiceSortKey> | null;
+  onToggleSort: (key: ServiceSortKey) => void;
   onRowClick: (s: Service) => void;
 }
 
@@ -36,24 +41,31 @@ export function ServicesTable({
   projectOf,
   serviceTypeLabel,
   periodLabel,
+  sort,
+  onToggleSort,
   onRowClick,
 }: ServicesTableProps) {
   const { t } = useTranslation();
+  const sortHead = (key: ServiceSortKey, label: string) => (
+    <SortableTableHead
+      label={label}
+      active={sort?.key === key ? sort.dir : null}
+      onToggle={() => onToggleSort(key)}
+    />
+  );
   return (
     <Card className="overflow-hidden py-0">
       <div className="overflow-x-auto">
         <Table className="min-w-[760px]">
           <TableHeader>
             <TableRow>
-              <TableHead className="text-muted-foreground">{t('services.colName')}</TableHead>
-              <TableHead className="text-muted-foreground">{t('services.colProvider')}</TableHead>
-              <TableHead className="text-muted-foreground">{t('services.colProject')}</TableHead>
-              <TableHead className="text-muted-foreground">{t('services.colType')}</TableHead>
-              <TableHead className="text-muted-foreground">{t('services.colCost')}</TableHead>
-              <TableHead className="text-muted-foreground">{t('services.colPeriod')}</TableHead>
-              <TableHead className="text-muted-foreground">
-                {t('services.colNextBilling')}
-              </TableHead>
+              {sortHead('name', t('services.colName'))}
+              {sortHead('provider', t('services.colProvider'))}
+              {sortHead('project', t('services.colProject'))}
+              {sortHead('type', t('services.colType'))}
+              {sortHead('cost', t('services.colCost'))}
+              {sortHead('period', t('services.colPeriod'))}
+              {sortHead('nextBilling', t('services.colNextBilling'))}
               <TableHead className="text-muted-foreground">{t('services.colSource')}</TableHead>
             </TableRow>
           </TableHeader>

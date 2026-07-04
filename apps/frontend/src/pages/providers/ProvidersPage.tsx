@@ -12,12 +12,15 @@ import {
   useSyncProvider,
   useUpdateProvider,
 } from '@/api/providers';
+import { useRates } from '@/api/rates';
 import { useSettings } from '@/api/settings';
 import { PageHeader } from '@/components/PageHeader';
 import { Button } from '@/components/ui/button';
 import { useEnums } from '@/constants';
 import { useDisclosure } from '@/hooks/useDisclosure';
+import { sortRows, useTableSort } from '@/hooks/useTableSort';
 import { formatDate } from '@/utils/format';
+import { buildRubMap } from '@/utils/money';
 import { notifyError, notifySuccess } from '@/utils/notify';
 import { ProviderDetailModal } from './ProviderDetailModal';
 import { ProviderFormModal } from './ProviderFormModal';
@@ -28,11 +31,13 @@ import {
   buildCredentials,
   validateProviderCredentials,
 } from './providerForm';
+import { PROVIDER_SORT_KEYS, providerSortAccessors } from './providersSort';
 
 export function ProvidersPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const enums = useEnums();
   const { data: providers, isLoading } = useProviders();
+  const { data: rates } = useRates();
   const create = useCreateProvider();
   const update = useUpdateProvider();
   const del = useDeleteProvider();
@@ -44,6 +49,14 @@ export function ProvidersPage() {
   const [detailUuid, setDetailUuid] = useState<string | null>(null);
   const selected = providers?.find((p) => p.uuid === detailUuid) ?? null;
   const [createOpened, { open: openCreateModal, close: closeCreateModal }] = useDisclosure(false);
+
+  const { sort, toggleSort } = useTableSort('providers-sort', PROVIDER_SORT_KEYS);
+  const sorted = sortRows(
+    providers,
+    sort,
+    providerSortAccessors({ rub: buildRubMap(rates), base: settings?.baseCurrency ?? 'RUB' }),
+    i18n.language,
+  );
 
   const form = useForm<FormValues>({ defaultValues: EMPTY_FORM, mode: 'onSubmit' });
 
@@ -171,10 +184,12 @@ export function ProvidersPage() {
       </div>
 
       <ProvidersTable
-        providers={providers}
+        providers={sorted}
         isLoading={isLoading}
         syncingUuid={sync.isPending ? sync.variables : undefined}
         kindLabel={enums.providerKindLabel}
+        sort={sort}
+        onToggleSort={toggleSort}
         onRowClick={openDetail}
       />
 

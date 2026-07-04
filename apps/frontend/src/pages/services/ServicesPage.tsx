@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { apiErrorMessage } from '@/api/client';
 import { useProjects } from '@/api/projects';
 import { useProviders } from '@/api/providers';
+import { useRates } from '@/api/rates';
 import {
   type ServiceFilter,
   useCreateService,
@@ -14,25 +15,31 @@ import {
   useServices,
   useUpdateService,
 } from '@/api/services';
+import { useSettings } from '@/api/settings';
 import { PageHeader } from '@/components/PageHeader';
 import { Button } from '@/components/ui/button';
 import { useEnums } from '@/constants';
 import { useDisclosure } from '@/hooks/useDisclosure';
+import { sortRows, useTableSort } from '@/hooks/useTableSort';
 import { useCountryOptions } from '@/utils/countries';
 import { trimMoney } from '@/utils/format';
+import { buildRubMap } from '@/utils/money';
 import { notifyError, notifySuccess } from '@/utils/notify';
 import { type SForm, toIso } from './serviceForm';
 import { ServiceDetailModal } from './ServiceDetailModal';
 import { ServiceFormModal } from './ServiceFormModal';
 import { ServicesFilters } from './ServicesFilters';
+import { SERVICE_SORT_KEYS, serviceSortAccessors } from './servicesSort';
 import { ServicesTable } from './ServicesTable';
 
 export function ServicesPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const enums = useEnums();
   const countryOptions = useCountryOptions();
   const { data: providers } = useProviders();
   const { data: projects } = useProjects();
+  const { data: rates } = useRates();
+  const { data: settings } = useSettings();
   const [filter, setFilter] = useState<ServiceFilter>({});
   const { data: services, isLoading } = useServices(filter);
   const create = useCreateService();
@@ -50,6 +57,20 @@ export function ServicesPage() {
   // Default a new service to the default project (or the first one).
   const defaultProjectUuid =
     projects?.find((p) => p.uuid === DEFAULT_PROJECT_UUID)?.uuid ?? projectOptions[0]?.value ?? '';
+
+  const { sort, toggleSort } = useTableSort('services-sort', SERVICE_SORT_KEYS);
+  const sorted = sortRows(
+    services,
+    sort,
+    serviceSortAccessors({
+      rub: buildRubMap(rates),
+      base: settings?.baseCurrency ?? 'RUB',
+      providerOf,
+      projectOf,
+      serviceTypeLabel: enums.serviceTypeLabel,
+    }),
+    i18n.language,
+  );
 
   const form = useForm<SForm>({
     defaultValues: {
@@ -184,12 +205,14 @@ export function ServicesPage() {
       />
 
       <ServicesTable
-        services={services}
+        services={sorted}
         isLoading={isLoading}
         providerOf={providerOf}
         projectOf={projectOf}
         serviceTypeLabel={enums.serviceTypeLabel}
         periodLabel={enums.periodLabel}
+        sort={sort}
+        onToggleSort={toggleSort}
         onRowClick={openDetail}
       />
 

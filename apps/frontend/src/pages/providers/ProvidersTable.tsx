@@ -2,6 +2,7 @@ import type { Provider } from '@infra/shared';
 import { IconExternalLink, IconLoader2 } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { ProviderIcon } from '@/components/ProviderIcon';
+import { SortableTableHead } from '@/components/SortableTableHead';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -14,14 +15,18 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import type { SortState } from '@/hooks/useTableSort';
 import { providerFavicon } from '@/utils/favicon';
 import { formatDate, formatMoney } from '@/utils/format';
+import type { ProviderSortKey } from './providersSort';
 
 interface ProvidersTableProps {
   providers: Provider[] | undefined;
   isLoading: boolean;
   syncingUuid: string | undefined;
   kindLabel: (kind: string) => string;
+  sort: SortState<ProviderSortKey> | null;
+  onToggleSort: (key: ProviderSortKey) => void;
   onRowClick: (p: Provider) => void;
 }
 
@@ -30,20 +35,29 @@ export function ProvidersTable({
   isLoading,
   syncingUuid,
   kindLabel,
+  sort,
+  onToggleSort,
   onRowClick,
 }: ProvidersTableProps) {
   const { t } = useTranslation();
+  const sortHead = (key: ProviderSortKey, label: string) => (
+    <SortableTableHead
+      label={label}
+      active={sort?.key === key ? sort.dir : null}
+      onToggle={() => onToggleSort(key)}
+    />
+  );
   return (
     <Card className="overflow-hidden py-0">
       <div className="overflow-x-auto">
         <Table className="min-w-[660px]">
           <TableHeader>
             <TableRow>
-              <TableHead className="text-muted-foreground">{t('providers.th.name')}</TableHead>
+              {sortHead('name', t('providers.th.name'))}
               <TableHead className="text-muted-foreground">{t('providers.th.type')}</TableHead>
-              <TableHead className="text-muted-foreground">{t('providers.th.balance')}</TableHead>
-              <TableHead className="text-muted-foreground">{t('providers.th.services')}</TableHead>
-              <TableHead className="text-muted-foreground">{t('providers.th.payments')}</TableHead>
+              {sortHead('balance', t('providers.th.balance'))}
+              {sortHead('services', t('providers.th.services'))}
+              {sortHead('payments', t('providers.th.payments'))}
               <TableHead className="text-muted-foreground">{t('providers.th.sync')}</TableHead>
             </TableRow>
           </TableHeader>
