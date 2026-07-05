@@ -1,6 +1,6 @@
 export interface CloudflareCredentials {
   accountId: string; // CF account id; both endpoints are account-scoped
-  apiToken: string; // Bearer; perms: Account → Domain Configuration:Read + Account → Billing:Read
+  apiToken: string; // Bearer; perms: Registrar: Domains:Read + Billing:Read
 }
 
 export interface CfEnvelope<T> {

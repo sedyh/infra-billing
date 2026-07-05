@@ -185,8 +185,8 @@ curl -H "Authorization: Bearer ib_…" https://infra-billing/api/providers
 - **Aeza** — API-ключ (панель → API Keys). Тянет серверы (цена по сроку оплаты, страна по
   локации, дата продления), баланс (валюта аккаунта — RUB/USD/EUR) и историю транзакций
   (пополнения + списания). Суммы в API — в минорных единицах (÷100). Баланс предоплатный.
-- **Cloudflare** — API-токен (My Profile → API Tokens) с правами *Account · Domain Configuration:
-  Read* и *Account · Billing: Read*, плюс ID аккаунта (из URL дашборда или `GET /accounts`).
+- **Cloudflare** — API-токен (My Profile → API Tokens) с правами *Registrar: Domains:Read*
+  и *Billing:Read*, плюс ID аккаунта (из URL дашборда или `GET /accounts`).
   Регистратор доменов: тянет домены (`type=domain`, годовой период, дата продления = дата истечения;
   цены в API нет → вводятся вручную) и историю биллинга (пополнения/списания, USD). Баланса в API нет
   (постоплата через Stripe); Billing API устарел, поэтому импорт платежей best-effort.

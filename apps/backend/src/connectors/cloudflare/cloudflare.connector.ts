@@ -9,7 +9,7 @@ const PER_PAGE = 50;
 
 /**
  * Cloudflare connector, public REST API (https://api.cloudflare.com/client/v4). Auth: Bearer token
- * with Account → Domain Configuration:Read (registrar) + Account → Billing:Read (billing). Both
+ * with Registrar: Domains:Read (registrar) + Billing:Read (billing). Both
  * endpoints are account-scoped. Currency is USD. There is no account balance (postpay via Stripe),
  * so fetchAccount returns balance:null (like Hetzner). The Registrar API does not return domain
  * prices → services have no cost (owner fills them in). The Billing API is deprecated (since 2023,
@@ -112,7 +112,7 @@ function cfError(e: unknown): Error {
     if (body?.errors) return cfErrorFromBody(body.errors);
     if (e.response?.status === 401 || e.response?.status === 403) {
       return new Error(
-        'Cloudflare: invalid token or missing permissions (Domain Configuration:Read + Billing:Read)',
+        'Cloudflare: invalid token or missing permissions (Registrar: Domains:Read + Billing:Read)',
       );
     }
   }

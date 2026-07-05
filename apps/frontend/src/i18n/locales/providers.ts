@@ -64,7 +64,7 @@ export const providers = {
         'Linode → Account → API Tokens → create a Personal Access Token (read access to Account and Linodes)',
       apiTokenDescAeza: 'Aeza panel → API Keys → create an API key',
       apiTokenDescCloudflare:
-        'Cloudflare → My Profile → API Tokens → create a token with Account · Domain Configuration: Read and Account · Billing: Read',
+        'Cloudflare → My Profile → API Tokens → create a token with Registrar: Domains:Read and Billing:Read',
       cloudflareAccountIdDesc: 'Cloudflare account ID (dashboard URL or GET /accounts)',
       apiTokenDescStormwall: 'StormWall personal cabinet → API key, sent as the x-api-key header',
       refreshToken: 'Refresh token (OAuth2)',
@@ -185,7 +185,7 @@ export const providers = {
         'Linode → Account → API Tokens → создать Personal Access Token (доступ на чтение к Account и Linodes)',
       apiTokenDescAeza: 'Панель Aeza → API Keys → создать API-ключ',
       apiTokenDescCloudflare:
-        'Cloudflare → My Profile → API Tokens → создать токен с правами Account · Domain Configuration: Read и Account · Billing: Read',
+        'Cloudflare → My Profile → API Tokens → создать токен с правами Registrar: Domains:Read и Billing:Read',
       cloudflareAccountIdDesc: 'Account ID аккаунта Cloudflare (из URL дашборда или GET /accounts)',
       apiTokenDescStormwall:
         'Личный кабинет StormWall → API-ключ (передаётся в заголовке x-api-key)',
