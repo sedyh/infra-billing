@@ -27,17 +27,13 @@ function parseDate(value?: string): Date | undefined {
   return Number.isNaN(d.getTime()) ? undefined : d;
 }
 
+// Live responses return `ip` as a single object; keep the array/string forms defensively.
 function primaryIp(ip: VdsinaServer['ip']): string | undefined {
-  if (Array.isArray(ip)) {
-    for (const item of ip) {
-      if (typeof item === 'string' && item) return item;
-      if (item && typeof item === 'object' && 'ip' in item && typeof item.ip === 'string') {
-        return item.ip;
-      }
-    }
-    return undefined;
+  for (const item of Array.isArray(ip) ? ip : [ip]) {
+    if (typeof item === 'string' && item) return item;
+    if (item && typeof item === 'object' && typeof item.ip === 'string') return item.ip;
   }
-  return ip || undefined;
+  return undefined;
 }
 
 function countryCode(s: VdsinaServer): string | undefined {
@@ -53,7 +49,7 @@ function period(plan: VdsinaServer['server-plan']): string | undefined {
 }
 
 export function mapVdsinaServer(s: VdsinaServer, currency: string): ServiceData {
-  const plan = s['server-plan'] ?? s.server_plan;
+  const plan = s['server-plan'];
   return {
     externalId: String(s.id),
     name: s.name || s.host || primaryIp(s.ip) || `vdsina-${s.id}`,
@@ -62,7 +58,7 @@ export function mapVdsinaServer(s: VdsinaServer, currency: string): ServiceData 
     cost: asDecimal(plan?.cost),
     currency,
     period: period(plan),
-    nextBilling: parseDate(s.end ?? s.expire ?? s.expires ?? s.prolong),
+    nextBilling: parseDate(s.end),
     meta: {
       ip: s.ip,
       host: s.host,

@@ -111,18 +111,16 @@ export class VdsinaConnector implements Connector {
       .filter((p): p is PaymentData => p !== null);
   }
 
-  /** The list endpoint can omit fields; fill them from the detail endpoint when useful. */
+  /**
+   * The list row's server-plan is bare {id, name} — cost/period always require the detail
+   * (for server-group) and the group's plan catalog. Best-effort: on failure the list row
+   * still yields an unpriced service.
+   */
   private async withDetails(server: VdsinaServer, signal: AbortSignal): Promise<VdsinaServer> {
-    const plan = server['server-plan'] ?? server.server_plan;
-    if (plan?.cost && (server.end || server.expire || server.expires)) {
-      return server;
-    }
     try {
       const { data } = await this.http.get<VdsinaEnvelope<VdsinaServer>>(
         `/v1/server/${server.id}`,
-        {
-          signal,
-        },
+        { signal },
       );
       const detailed = { ...server, ...data.data };
       return await this.withPlanPrice(detailed, signal);
@@ -133,12 +131,13 @@ export class VdsinaConnector implements Connector {
 
   /** Server detail includes only plan id/name; price/period live in /v1/server-plan/{groupId}. */
   private async withPlanPrice(server: VdsinaServer, signal: AbortSignal): Promise<VdsinaServer> {
-    const plan = server['server-plan'] ?? server.server_plan;
+    const plan = server['server-plan'];
     if (!plan?.id || plan.cost) return server;
-    const group = server['server-group'] ?? server.server_group;
+    const group = server['server-group'];
     if (!group?.id) return server;
 
     const plans = await this.fetchPlans(group.id, signal);
+    // Retired plans disappear from the catalog — the service then stays unpriced on purpose.
     const priced = plans.find((p) => p.id === plan.id);
     if (!priced) return server;
     // Constructor plans (has_params) bill base price + configured extras; the catalog price alone
@@ -148,7 +147,6 @@ export class VdsinaConnector implements Connector {
     return {
       ...server,
       'server-plan': { ...priced, ...plan, cost: priced.cost, period: priced.period },
-      server_plan: undefined,
     };
   }
 

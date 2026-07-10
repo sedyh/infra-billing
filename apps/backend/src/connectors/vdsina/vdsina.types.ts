@@ -26,24 +26,21 @@ export interface VdsinaBalance {
   partner?: number | string;
 }
 
+// Field shapes verified live (2026-07, .com branch): list rows carry `end` and a bare
+// `server-plan` {id, name}; `ip` is a single object in list responses.
 export interface VdsinaServer {
   id: number;
   name?: string;
   host?: string;
-  ip?: string | VdsinaServerIp[];
+  ip?: string | VdsinaServerIp | VdsinaServerIp[];
   status?: string;
   status_text?: string;
   created?: string;
-  expire?: string;
-  expires?: string;
   end?: string;
-  prolong?: string;
   autoprolong?: boolean;
   datacenter?: VdsinaNamedRef;
   'server-plan'?: VdsinaServerPlan;
-  server_plan?: VdsinaServerPlan;
   'server-group'?: VdsinaNamedRef;
-  server_group?: VdsinaNamedRef;
   template?: VdsinaNamedRef;
   // detail response: per-parameter { value: plan base, total: configured } pairs (cpu/ram/disk)
   data?: Record<string, unknown>;
@@ -53,12 +50,10 @@ export interface VdsinaServer {
 export interface VdsinaServerPlan {
   id?: number;
   name?: string;
-  cost?: number | string;
+  cost?: number | string; // plan cost with client discounts (full_cost = undiscounted)
   period?: string;
-  period_name?: string;
   has_params?: boolean;
   'server-group'?: number;
-  server_group?: number;
   data?: Record<string, unknown>;
   [key: string]: unknown;
 }
