@@ -17,7 +17,10 @@ import {
 import { totpCode } from '../common/totp';
 import { BillmgrCredentials, BillmgrDoc } from './billmgr.types';
 
-// BILLmanager splits services by type, each behind its own list func.
+// BILLmanager splits services by type, each behind its own list func. Installs can add custom
+// item types whose lists live behind dotted subtypes of these base funcs (e.g. waicore's
+// vds.vps next to a now-empty vds), so this static list is a baseline: fetchServices extends
+// it with the subtype funcs discovered in the client menu.
 const ITEM_FUNCS: { func: string; type: string }[] = [
   { func: 'vds', type: 'vps' },
   { func: 'dedic', type: 'dedicated' },
@@ -260,20 +263,54 @@ export class BillmgrConnector implements Connector {
     };
   }
 
+  /**
+   * The client menu (func=menu, group `mainmenuservice`) lists the item funcs this install
+   * actually exposes, including custom item types behind dotted subtypes of the base funcs
+   * (waicore: `vds.vps` holds the servers while plain `vds` is empty). Keep the subtypes of
+   * known base groups, typed as their base; ITEM_FUNCS stays the baseline (and the fallback
+   * when the menu is unavailable).
+   */
+  private async discoverItemFuncs(signal: AbortSignal): Promise<{ func: string; type: string }[]> {
+    const funcs = new Map(ITEM_FUNCS.map((f) => [f.func, f.type]));
+    try {
+      const data = await this.call('menu', signal);
+      const mainmenu = data?.doc?.mainmenu as Record<string, unknown> | undefined;
+      for (const group of asArray(mainmenu?.node) as Record<string, unknown>[]) {
+        if (group.$name !== 'mainmenuservice') continue;
+        for (const node of asArray(group.node) as Record<string, unknown>[]) {
+          const action = typeof node.$action === 'string' ? node.$action : undefined;
+          if (!action || node.$type !== 'list' || funcs.has(action)) continue;
+          const baseType = funcs.get(action.split('.')[0]);
+          if (baseType) funcs.set(action, baseType);
+        }
+      }
+    } catch (err) {
+      this.logger.warn(`func=menu failed, using static item funcs: ${(err as Error).message}`);
+    }
+    return [...funcs].map(([func, type]) => ({ func, type }));
+  }
+
   async fetchServices(signal: AbortSignal): Promise<ServiceData[]> {
     // Establish (and validate) the session up front so an auth/2FA failure propagates,
     // otherwise the per-func catch below would swallow it and silently return 0 services.
     await this.ensureSession(signal);
     const out: ServiceData[] = [];
-    for (const { func, type } of ITEM_FUNCS) {
+    // An item could show up under both the base func and its subtype; item ids are
+    // install-wide, so dedupe by externalId.
+    const seen = new Set<string>();
+    for (const { func, type } of await this.discoverItemFuncs(signal)) {
       let data: BillmgrDoc;
       try {
         data = await this.call(func, signal);
       } catch {
         continue; // a type unavailable on this install, skip
       }
-      for (const e of asArray(data?.doc?.elem))
-        out.push(mapBillmgrService(e as Record<string, unknown>, type));
+      for (const e of asArray(data?.doc?.elem)) {
+        const svc = mapBillmgrService(e as Record<string, unknown>, type);
+        if (!svc.externalId || seen.has(svc.externalId)) continue;
+        seen.add(svc.externalId);
+        out.push(svc);
+      }
     }
     return out;
   }
